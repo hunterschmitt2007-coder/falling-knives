@@ -12,6 +12,7 @@ import datetime as dt
 import io
 import json
 import math
+import re
 import os
 import subprocess
 import sys
@@ -41,7 +42,22 @@ def week_key(d):
 def load_universe():
     df = pd.read_csv(io.StringIO(requests.get(CONSTITUENTS, timeout=30).text))
     df["Y"] = df["Symbol"].str.replace(".", "-", regex=False)
-    return {r.Y: {"name": r.Security, "sector": r["GICS Sector"]} for _, r in df.iterrows()}
+    return {r.Y: {"name": r.Security, "sector": r["GICS Sector"], "sub": r["GICS Sub-Industry"] if isinstance(r.get("GICS Sub-Industry"), str) else ""} for _, r in df.iterrows()}
+
+
+def is_tech(sector, sub):
+    return sector == "Information Technology" or bool(re.search(r"Semiconductor|Interactive Media", sub or ""))
+
+
+def pick_pattern(r, sector, sub, secmed, spx_mtd):
+    """The four traits the best knives shared in the 2021-2026 backtest."""
+    sm = secmed.get(sector)
+    t = is_tech(sector, sub)
+    c = (sm is not None and sm <= -3) or (spx_mtd is not None and spx_mtd <= -3)
+    n = sm is not None and r["mtd"] - sm > -12
+    d = r.get("dd52") is not None and r["dd52"] <= -30
+    return {"t": t, "c": bool(c), "n": bool(n), "d": bool(d), "score": int(t) + int(bool(c)) + int(bool(n)) + int(bool(d)),
+            "sm": r2(sm) if sm is not None else None}
 
 
 def download(symbols):
@@ -455,6 +471,13 @@ def build_digest(meta, D, BC, G, V, prev_syms, asof):
         L.append("**Earnings in the next 7 days**")
         L += [f"- **{s}** {dt.date.fromisoformat(e).strftime('%a %b %-d')}" + (" (tomorrow)" if d == 1 else " (today)" if d == 0 else "") for s, e, d in sorted(soon, key=lambda x: x[2])[:12]]
         L.append("")
+    pat = [r for r in D + BC if r.get("pat") and r["pat"]["score"] >= 3]
+    seen = set(); pat = [r for r in sorted(pat, key=lambda r: -r["pat"]["score"]) if not (r["s"] in seen or seen.add(r["s"]))]
+    if pat:
+        L.append("**Knives matching the perfect-pick pattern (3+ of 4)**")
+        names = {"t": "tech", "c": "group sell-off", "n": "not company-specific", "d": "30%+ off high"}
+        L += [f"- **{r['s']}** {fmt(r['mtd'])} — {r['pat']['score']}/4 (" + ", ".join(v for k, v in names.items() if r['pat'][k]) + ")" for r in pat[:10]]
+        L.append("")
     rich = [r for r in D + BC if r.get("pAnn")]
     seen = set(); rich = [r for r in sorted(rich, key=lambda r: -r["pAnn"]) if not (r["s"] in seen or seen.add(r["s"]))]
     if rich:
@@ -513,6 +536,11 @@ def main():
         else:
             r["beta"] = None
 
+    secmed = {}
+    for sec in {u["sector"] for u in uni.values()}:
+        v = sorted(M[x]["mtd"] for x in M if uni[x]["sector"] == sec)
+        if v: secmed[sec] = v[len(v) // 2]
+
     caps = market_caps(syms)
     ranked = sorted(M.values(), key=lambda r: r["mtd"])
     top = ranked[:TOP_N]
@@ -548,6 +576,8 @@ def main():
         s = r["s"]; o = {k: v for k, v in r.items() if k not in ("base", "wkends") and not k.startswith("_")}
         o.update(det.get(s, {}))
         o["name"] = uni[s]["name"]; o["sector"] = uni[s]["sector"]; o["rank"] = rank
+        o["sub"] = uni[s].get("sub") or None
+        o["pat"] = pick_pattern(r, uni[s]["sector"], uni[s].get("sub"), secmed, spx["mtd"])
         o["mc"] = r2(caps[s] / 1e9) if caps.get(s) else None
         op = opts.get(s)
         if op:
@@ -584,6 +614,7 @@ def main():
     all_mtd = sorted(r["mtd"] for r in M.values())
     meta = {
         "asof": last_date.isoformat(), "monthName": month_name, "year": last_date.year,
+        "secMed": {k: r2(v) for k, v in secmed.items()},
         "spx_mtd": spx["mtd"], "ndown": sum(1 for x in all_mtd if x < 0), "n": len(M),
         "median": all_mtd[len(all_mtd) // 2], "nup": sum(1 for x in all_mtd if x > 0),
         "spx_vol30": spx["vol30"],
@@ -602,6 +633,7 @@ def main():
     for s, r in M.items():
         o = {k: v for k, v in r.items() if k not in ("base", "wkends") and not k.startswith("_")}
         o["name"] = uni[s]["name"]; o["sector"] = uni[s]["sector"]; o["mc"] = r2(caps[s] / 1e9) if caps.get(s) else None
+        o["pat"] = pick_pattern(r, uni[s]["sector"], uni[s].get("sub"), secmed, spx["mtd"])
         f = frames[s]; wk = f["Close"].resample("W-FRI").last().dropna().tail(53)
         o["wc"] = [[d.strftime("%Y-%m-%d"), r2(v)] for d, v in wk.items()]
         ALLS[s] = o

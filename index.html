@@ -364,6 +364,19 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 .foot h2{font-size:28px;letter-spacing:-.03em;margin:0 0 4px;color:var(--ink)}
 .foot .fsub{font-size:14px;color:var(--muted);margin:0 0 18px}
 .foot .disc{font-size:12px;color:var(--faint);margin-top:18px}
+
+/* ---- pick pattern ---- */
+.b-pat{background:#EFEAFE;color:#5B3CC4}
+.b-pat4{background:#5B3CC4;color:#fff}
+.patrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.pchip{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--faint);background:var(--bg2);border-radius:10px;padding:6px 9px;line-height:1.25}
+.pchip i{font-style:normal;flex:0 0 auto;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:10px;background:#E5E5EA;color:#8E8E93}
+.pchip.on{color:var(--ink);background:#F4F0FF}
+.pchip.on i{background:#5B3CC4;color:#fff}
+.pmeter{display:flex;gap:3px}
+.pmeter b{width:14px;height:6px;border-radius:3px;background:#E5E5EA}
+.pmeter b.on{background:#5B3CC4}
+.bt td.sc{font-weight:600}
 </style>
 </head><body>
 
@@ -461,7 +474,7 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
     <details class="mcard"><summary>Where the reasons come from</summary><p>Reasons come from news coverage around each stock's biggest down days this month. High confidence = a specific, reported catalyst. Medium = a sector or theme move with supporting coverage. Low = no single catalyst found.</p></details>
     <details class="mcard"><summary>Winners and volatility</summary><p>Winners = the 50 S&amp;P 500 members with the biggest gain this month, measured the same way. <b>Volatility</b> = how much a stock's daily price swings, as the annualized standard deviation of daily returns over the last 30 trading days (1-year volatility uses the past year). A stock at 60% swings roughly three times as much as one at 20%. Average daily move is the typical size of one day's move, up or down. Beta compares a stock's daily moves with the S&amp;P 500's over the past year: 1.0 moves with the market, 2.0 moves about twice as much.</p></details>
     <details class="mcard"><summary>Sell-a-put numbers</summary><p>Sell-a-put numbers use the listed put about 30 days out whose delta is nearest 0.30 (roughly a 70% chance of expiring worthless, by the options market's own pricing). Premium = mid of bid/ask, or the last trade when there's no live quote. Annualized = premium ÷ strike × 365 ÷ days to expiry (the return on cash set aside to buy the shares). IV is the at-the-money implied volatility, which we work out from the option prices. "× realized" compares it with the stock's actual 30-day volatility: above 1 means options are pricing in bigger swings than the stock has been making. IV rank shows where today's IV sits in its own range, and only appears after 20 days of history. All options data is from the close and updates once a day.</p></details>
-    <details class="mcard"><summary>Bottoming signs</summary><p>Bottoming signs are four simple checks: back above the 50-day average after being below it in the last two weeks; RSI (14-day momentum) up 10+ points from an oversold reading under 30 in the last two weeks; the first up week after two or more down weeks; and a higher low (the last two weeks' low is above a 3-month low set 2–6 weeks ago). Two or more = "Rebounding". They are not predictions and fail often.</p></details>
+    <details class="mcard"><summary>Pick pattern</summary><p><b>Pick pattern</b> scores each falling knife on the 4 traits the best knives shared in a backtest of every monthly list from Sep 2021 to Aug 2026 (using the real S&amp;P 500 members each month): a tech or semiconductor company; falling in a group sell-off (its sector's median stock or the S&amp;P 500 down 3%+ this month); moving with its sector rather than blowing up on its own news (within 12 points of the sector median); and already 30%+ below its 52-week high. Over the next 12 months, knives scoring 4 of 4 averaged +62% (79% beat the S&amp;P 500); 3 of 4 averaged +16%; 0–1 averaged about +3%. The tech result partly reflects the AI boom in those years and may not repeat, and in 2024–25 the higher scores' edge came mostly from a few big winners. A higher score means better odds, not a guaranteed pick.</p></details><details class="mcard"><summary>Bottoming signs</summary><p>Bottoming signs are four simple checks: back above the 50-day average after being below it in the last two weeks; RSI (14-day momentum) up 10+ points from an oversold reading under 30 in the last two weeks; the first up week after two or more down weeks; and a higher low (the last two weeks' low is above a 3-month low set 2–6 weeks ago). Two or more = "Rebounding". They are not predictions and fail often.</p></details>
     <details class="mcard"><summary>Track record</summary><p>Track record ranks every S&amp;P 500 member by its return in each calendar month and follows the 50 worst (and 50 best) from that month's last close. Months marked Live use the list exactly as this site published it. Earlier months are rebuilt from price history using today's members, so companies that were later dropped from the index are missing, which makes the results look somewhat better than they really were.</p></details>
     <details class="mcard"><summary>Blue chips</summary><p>Blue chips = the 50 largest S&amp;P 500 companies by market cap (one share class per company). Analyst upside = average price target vs. last close.</p></details>
     <details class="mcard"><summary>Data and live prices</summary><p>Yahoo Finance daily closes (split-adjusted) for all 503 S&amp;P 500 members, plus Yahoo quote data for valuation and analyst targets. Rankings and reasons refresh every weekday after the close (about 5:30pm ET). Prices on the cards, the blue-chip tiles and the S&amp;P figure update live from Finnhub during market hours, roughly every minute per stock (faster for the stocks on your screen); % this month, % off the high and this week's bar recalculate from the live price. Confirm prices with your broker before trading. For information only, not investment advice.</p></details>
@@ -485,6 +498,11 @@ const {D,BC,BIG,M}=window.FK;
 const G=window.FK.G||[],V=window.FK.V||[],VB=window.FK.VB||[];
 const ALL=[...D,...BC,...G,...V,...VB];
 const TR=window.FK.TR||[];
+ALL.forEach(r=>{r.patScore=r.pat&&r.mtd<0?r.pat.score:null});
+const PATS=[["t","Tech or semiconductor","Information Technology, chip makers or interactive media"],["c","Group sell-off","its sector's median stock, or the S&P 500, is down 3%+ this month"],["n","Moving with its sector","within 12 points of its sector's median move, so not a company-specific blow-up"],["d","30%+ below its high","already well off its 52-week high"]];
+// 12-month results for every falling knife bought Sep 2021 – Aug 2025, by pattern score
+const PATBT=[[4,47,61.9,52.2,79],[3,311,15.5,6.2,42],[2,834,10.8,4.7,39],[1,977,3.1,-1.1,31],[0,281,1.9,1.2,35]];
+const patOn=r=>r.pat&&r.mtd<0;
 const WKEY="fk_watch";let WATCH=[];try{WATCH=JSON.parse(localStorage.getItem(WKEY)||"[]").filter(x=>typeof x==="string")}catch(e){}
 const saveW=()=>{try{localStorage.setItem(WKEY,JSON.stringify(WATCH))}catch(e){}};
 let ALLJ=null,allP=null;
@@ -572,6 +590,11 @@ function earnBadge(r){
   const inPut=earnInPut(r);
   return `<span class="bdg ${inPut||n<=7?"b-red":"b-amb"}" title="Earnings ${dt(r.ed,1)}${r.edEst?" (estimated date)":""}${inPut?" — before the ~30-day put expires":""}">${n===0?"Earnings today":n===1?"Earnings tomorrow":`Earnings in ${n} days`}${r.edEst?" (est.)":""}</span>`;
 }
+function patBadge(r){if(!patOn(r)||r.pat.score<3)return"";const p=r.pat.score;return `<span class="bdg ${p===4?"b-pat4":"b-pat"}" title="Matches ${p} of the 4 traits the best falling knives shared (2021–2026 backtest)">◆ ${p===4?"Perfect-pick pattern":"Strong pick pattern"} · ${p}/4</span>`}
+function patSection(r){
+  if(!patOn(r))return"";const p=r.pat;
+  return `<section class="c-sec"><h4 class="cs-h">Pick pattern<span class="pmeter" aria-label="${p.score} of 4">${[0,1,2,3].map(i=>`<b class="${i<p.score?"on":""}"></b>`).join("")}</span></h4><div class="patrow">${PATS.map(([k,l])=>`<span class="pchip ${p[k]?"on":""}"><i>${p[k]?"✓":"–"}</i>${l}</span>`).join("")}</div></section>`;
+}
 function sigBadge(r){const g=r.sig||[];if(!g.length)return"";return `<span class="bdg b-grn" title="${esc(g.join(" · "))}">${g.length>=2?"Rebounding":"Early sign"}: ${esc(g.join(" · "))}</span>`}
 function putBlock(r){
   const o=r.opt;if(!o||!o.puts||!o.puts.length)return"";
@@ -591,7 +614,7 @@ function card(r,label,kind){
   const big=kind==="vol"?`<div class="big num">${volFmt(r.vol30)}<small>30-day volatility</small></div>`:`<div class="big num ${cls(r.mtd)}">${pct(r.mtd)}<small>this month</small></div>`;
   const factT=kind==="gain"?"The run":kind==="vol"?"The swings":"The drop";
   const o=r.opt,p=o&&o.puts&&(o.puts.find(x=>x.d===30)||o.puts[0]);
-  const badges=earnBadge(r)+sigBadge(r);
+  const badges=patBadge(r)+earnBadge(r)+sigBadge(r);
   return `<article class="card" data-s="${r.s}" data-label="${esc(label)}" data-kind="${kind}">
     <header class="c-hd">
       <div class="ctop"><span class="rank">${label}</span><span class="pills">${kind==="fall"?statusPill(r):wkPill(r)}${starBtn(r.s)}</span></div>
@@ -602,6 +625,7 @@ function card(r,label,kind){
       <div class="px"><span class="pxv num">${money(r.last)}</span><span class="pxc num ${cls(r.day)}">${r.day>0?"+":r.day<0?"−":""}$${rnd(r.last-r.prev,2)} (${pct(r.day,2)})</span><span class="pxl">${r.liveT?`<b class="lvdot"></b>Live · ${r.liveT}`:"Close · "+dt(M.asof)}</span><a class="live" href="https://finance.yahoo.com/quote/${encodeURIComponent(r.s)}/" target="_blank" rel="noopener" aria-label="Live ${r.s} quote on Yahoo Finance"><i></i>Live quote ↗</a></div>
       ${badges?`<div class="bdgs">${badges}</div>`:""}
     </header>
+    ${patSection(r)}
     ${p?`<section class="c-sec"><h4 class="cs-h">Sell a put<span>${p.d}Δ · ${dt(o.exp)} · ${o.dte} days</span></h4>${putBlock(r)}</section>`:""}
     ${r.wks&&r.wks.length?`<section class="c-sec"><h4 class="cs-h">Weekly returns<span>last 10 weeks, %</span></h4><div class="spark"><div class="lbl"></div>${bars(r.wks)}<div class="lbl"><span>${M.wkdates[0]}</span><span>This week (so far)</span></div></div></section>`:""}
     <section class="c-sec"><h4 class="cs-h">${factT}</h4><dl class="facts">${factsFor(r,kind).map(([k,v,c,sm])=>`<div><dt>${k}</dt><dd class="num ${c}">${v}${sm?`<small>${esc(sm)}</small>`:""}</dd></div>`).join("")}</dl></section>
@@ -611,9 +635,9 @@ function card(r,label,kind){
 }
 
 const LIMIT=12;
-const passSt=(r,st)=>!st||(st==="reb"&&(r.sig||[]).length>=2)||(st==="sign"&&(r.sig||[]).length>=1)||(st==="earn"&&earnSoon(r))||(st==="noearn"&&!earnInPut(r)&&!earnSoon(r,35))||(st==="fall"&&r.curWk<0)||(st==="bounce"&&r.curWk>0)||(st==="low"&&r.offLo!=null&&r.offLo<1)||(st==="os"&&r.rsi!=null&&r.rsi<30);
+const passSt=(r,st)=>!st||(st==="pat3"&&r.patScore>=3)||(st==="pat4"&&r.patScore===4)||(st==="reb"&&(r.sig||[]).length>=2)||(st==="sign"&&(r.sig||[]).length>=1)||(st==="earn"&&earnSoon(r))||(st==="noearn"&&!earnInPut(r)&&!earnSoon(r,35))||(st==="fall"&&r.curWk<0)||(st==="bounce"&&r.curWk>0)||(st==="low"&&r.offLo!=null&&r.offLo<1)||(st==="os"&&r.rsi!=null&&r.rsi<30);
 const SORTS=[["rank","Worst this month",1],["dd52","Furthest off 52-wk high",1],["tdSinceHi","Longest decline",-1],["downWks","Longest down-week streak",-1],["rsi","Most oversold (RSI)",1],["upside","Biggest analyst upside",-1],["mc","Biggest company",-1],["day","Biggest drop last session",1],["last","Price: low to high",1]];
-const STATUS=[["","All"],["fall","Still falling this week"],["bounce","Bouncing this week"],["reb","Rebounding (2+ bottoming signs)"],["sign","Any bottoming sign"],["low","At a 52-week low"],["os","Oversold (RSI < 30)"],["earn","Earnings in the next 30 days"],["noearn","No earnings before put expiry"]];
+const STATUS=[["","All"],["fall","Still falling this week"],["bounce","Bouncing this week"],["reb","Rebounding (2+ bottoming signs)"],["sign","Any bottoming sign"],["low","At a 52-week low"],["os","Oversold (RSI < 30)"],["pat3","Pick pattern 3+ of 4"],["pat4","Pick pattern 4 of 4"],["earn","Earnings in the next 30 days"],["noearn","No earnings before put expiry"]];
 function opts(list,sel){return list.map(([v,l])=>`<option value="${esc(v)}"${v===sel?" selected":""}>${esc(l)}</option>`).join("")}
 function tally(rows,k){const c={};rows.forEach(r=>{const v=r[k]||"Other";c[v]=(c[v]||0)+1});return c}
 function makeBar(el,rows,p,noun,cb,opt={}){
@@ -650,7 +674,7 @@ function makeBar(el,rows,p,noun,cb,opt={}){
 
 const SORTS_G=[["rank","Best this month",1],["dd52","Closest to 52-wk high",-1],["upWks","Longest up-week streak",-1],["ytd","Best year to date",-1],["vol30","Most volatile",-1],["mc","Biggest company",-1],["day","Biggest gain last session",-1],["last","Price: low to high",1]];
 const SORTS_V=[["rank","Most volatile (30-day)",1],["adm","Biggest average daily move",-1],["beta","Highest beta",-1],["vol1y","Most volatile (1-year)",-1],["mtd","Worst this month",1],["mtdUp","Best this month",-1,"mtd"],["mc","Biggest company",-1],["last","Price: low to high",1]];
-const PUTSORTS=[["pAnn","Best put premium (30Δ)",-1],["ivhv","Richest IV vs realized",-1]];
+const PUTSORTS=[["patScore","Best pick pattern",-1],["pAnn","Best put premium (30Δ)",-1],["ivhv","Richest IV vs realized",-1]];
 SORTS.push(...PUTSORTS);SORTS_G.push(...PUTSORTS);SORTS_V.push(...PUTSORTS);
 const WL={id:"gridW",rows:[],kind:"watch",label:()=>"My list",olabel:()=>"On My list"};
 const LISTS=[
@@ -811,6 +835,17 @@ if(WATCH.length&&curTab!=="watch")renderWatch();
       ${o.puts.map(p=>`<tr class="${p.d===30?"cur30":""}"><td>${p.d}Δ <span style="color:var(--faint);font-weight:400">(${Math.abs(p.delta).toFixed(2)})</span></td><td>$${+p.k}</td><td>${money(p.px)}</td><td class="pos">${Math.round(p.ann)}%</td><td>${rnd(-p.otm,1)}%</td><td>${money(p.be)}</td><td>${p.bid>0&&p.ask>0?money(p.bid)+" / "+money(p.ask):"last trade"}</td><td>${Math.round(p.iv)}%</td><td>${(p.oi||0).toLocaleString()}</td></tr>`).join("")}
       </tbody></table></div><p class="sv-rng" style="margin-top:8px">From the close on ${dt(M.asof)}. Premium is per share (×100 per contract). Check live quotes with your broker before trading.</p></div>`;
   }
+  function patCard(r){
+    if(!patOn(r))return"";const p=r.pat;
+    const detail={t:esc(r.sub||r.sector||""),c:`${esc(r.sector||"sector")} median ${pct(p.sm)} · S&P 500 ${pct(M.spx_mtd)}`,n:`${pct(r.mtd)} vs sector ${pct(p.sm)} (gap ${pct(r.mtd-(p.sm||0))})`,d:`${pct(r.dd52)} from the 52-week high`};
+    return `<div class="sv-card"><h3 class="sv-h3">Pick pattern · ${p.score} of 4</h3>
+      <ul class="sigl">${PATS.map(([k,l,why])=>`<li class="${p[k]?"on":""}"><i>${p[k]?"✓":"–"}</i><span><b style="font-weight:600">${l}</b><br><span style="font-size:13px;color:var(--faint)">${detail[k]}</span></span></li>`).join("")}</ul>
+      <h3 class="sv-h3" style="margin-top:18px">How knives with each score did over the next 12 months</h3>
+      <div class="tscroll"><table class="ptab bt"><thead><tr><th>Score</th><th>Knives</th><th>Average</th><th>Typical (median)</th><th>Beat S&amp;P</th></tr></thead><tbody>
+      ${PATBT.map(([sc,n,a,m,b])=>`<tr class="${sc===p.score?"cur30":""}"><td class="sc">${sc}/4</td><td>${n}</td><td class="${cls(a)}">${pct(a)}</td><td class="${cls(m)}">${pct(m)}</td><td>${b}%</td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="sv-rng" style="margin-top:8px">Every monthly falling knife bought Sep 2021 – Aug 2025, using the actual S&amp;P 500 members each month. In 2024–25 the 3+ scores still averaged more, but the typical pick barely beat the rest, because a few huge winners did most of the work. Treat it as better odds, not a sure thing.</p></div>`;
+  }
   function sigCard(r){
     if(!r.sig)return"";const g=r.sig;
     return `<div class="sv-card"><h3 class="sv-h3">Bottoming signs · ${g.length} of 4</h3><ul class="sigl">${SIGS.map(k=>{const hit=g.find(x=>x.startsWith(k));return `<li class="${hit?"on":""}"><i>${hit?"✓":"–"}</i><span>${esc(hit||k)}</span></li>`}).join("")}</ul><p class="sv-rng" style="margin-top:12px">${g.length>=2?"Two or more signs: the fall may be losing steam.":g.length?"One early sign. Wait for more before calling a bottom.":"No signs of a bottom yet."} These are rules of thumb, not predictions.</p></div>`;
@@ -855,7 +890,7 @@ if(WATCH.length&&curTab!=="watch")renderWatch();
   }
 
   function render(r,label){
-    const kind=ctx?ctx.kind:"fall";const {key,all}=statRows(r,kind);
+    const kind=ctx?ctx.kind:"fall";const {key,all}=statRows(r,kind);if(r.pat)r.patScore=r.mtd<0?r.pat.score:null;
     setTimeout(()=>{const t=$("#svSec [data-j=svg-put]");if(t)t.hidden=!document.getElementById("svg-put");$("#svSec").querySelectorAll("a").forEach(a=>a.classList.toggle("on",a.dataset.j==="svg-chart"))},0);
     const pillHtml=r.curWk!=null?(kind==="fall"?statusPill(r):wkPill(r)):"";
     inEl.innerHTML=`
@@ -863,7 +898,7 @@ if(WATCH.length&&curTab!=="watch")renderWatch();
         <div style="min-width:0"><div class="sv-tk">${esc(r.s)}</div><div class="sv-nm">${esc(r.name||"")}${r.sector?" · "+esc(r.sector):""}</div></div>
         <div class="sv-px" id="svPxBox">${priceBlock(r,r.liveT)}</div>
       </div>
-      <div class="sv-pills"><span class="pill ${r.mtd<0?"p-fall":"p-up"}" id="svMtd">${pct(r.mtd)} in ${esc(M.monthName)}</span>${pillHtml}${earnBadge(r)}${label?`<span class="pill p-flat" style="background:var(--bg2);color:var(--muted)">${esc(label)}</span>`:""}
+      <div class="sv-pills"><span class="pill ${r.mtd<0?"p-fall":"p-up"}" id="svMtd">${pct(r.mtd)} in ${esc(M.monthName)}</span>${pillHtml}${patBadge(r)}${earnBadge(r)}${label?`<span class="pill p-flat" style="background:var(--bg2);color:var(--muted)">${esc(label)}</span>`:""}
         <a class="live" href="https://finance.yahoo.com/quote/${encodeURIComponent(r.s)}/" target="_blank" rel="noopener"><i></i>Yahoo quote ↗</a></div>
       <div id="svg-chart" style="scroll-margin-top:60px"></div>
       <div class="sv-card sv-chartcard">
@@ -884,7 +919,7 @@ if(WATCH.length&&curTab!=="watch")renderWatch();
         <div class="sv-card"><h3 class="sv-h3">${kind==="gain"?"The run":kind==="vol"?"The swings":"The drop"}</h3><dl class="sv-kf">${key.map(([k,v,c,s])=>`<div><dt>${k}</dt><dd class="num ${c}">${v}${s?`<small>${esc(s)}</small>`:""}</dd></div>`).join("")}</dl></div>
         <div class="sv-card sv-why"><h3 class="sv-h3">${r.conf==="News"?"In the news":r.theme?"Why it's falling":"About"}</h3>${whyHtml(r)}</div>
       </div></div>
-      ${r.opt||r.sig?`<div class="sv-group" id="svg-put"><h2 class="sv-gt">Trade setup</h2><div class="sv-cols">${putCard(r)||""}${sigCard(r)}</div></div>`:""}
+      ${r.opt||r.sig||patOn(r)?`<div class="sv-group" id="svg-put"><h2 class="sv-gt">Trade setup</h2><div class="sv-cols">${patCard(r)}${sigCard(r)}</div>${putCard(r)?`<div class="sv-wide" style="margin-top:16px">${putCard(r)}</div>`:""}</div>`:""}
       <div class="sv-group" id="svg-stats"><h2 class="sv-gt">History &amp; stats</h2>
       ${r.wks&&r.wks.length?`<div class="sv-card sv-wide"><h3 class="sv-h3">Weekly returns · last 10 weeks</h3><div style="max-width:720px;margin:0 auto">${bars(r.wks)}</div><div class="spark"><div class="lbl" style="max-width:720px;margin:0 auto;width:100%"><span>${M.wkdates[0]}</span><span>This week (so far)</span></div></div></div>`:""}
       <div class="sv-card sv-wide"><h3 class="sv-h3">All stats</h3><dl class="sv-all">${all.map(([k,v])=>`<div><dt>${k}</dt><dd class="num">${v}</dd></div>`).join("")}</dl></div>
