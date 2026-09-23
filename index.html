@@ -399,6 +399,22 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 .pklog td.k{font-weight:600}.pklog td:nth-child(2),.pklog th:nth-child(2){text-align:left}
 .tag{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:980px;background:var(--bg2);color:var(--muted)}
 .tag.live{background:var(--green-soft);color:var(--green)} .tag.lead{background:#F4F0FF;color:#5B3CC4}
+
+/* ---- pick highlight ---- */
+.pkban{display:block;max-width:1200px;margin:0 auto 18px;padding:0 22px}
+.pkban a{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,#5B3CC4,#7B5CE6);color:#fff;border-radius:18px;padding:14px 18px;box-shadow:0 6px 24px rgba(91,60,196,.28);text-decoration:none}
+.pkban a:hover{text-decoration:none;filter:brightness(1.05)}
+.pkban .l{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.pkban .t{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.pkban .n{font-size:14px;opacity:.9}
+.pkban .st{font-size:12px;font-weight:600;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:980px}
+.pkban .go{margin-left:auto;font-size:14px;font-weight:600;background:#fff;color:#5B3CC4;padding:8px 14px;border-radius:980px;white-space:nowrap}
+@media (max-width:560px){.pkban{padding:0 16px}.pkban .go{margin-left:0}.pkban .t{font-size:20px}}
+.card.is-pick{border:2px solid #5B3CC4!important;box-shadow:0 6px 28px rgba(91,60,196,.22)}
+.pickflag{display:block;background:#5B3CC4;color:#fff;font-size:12px;font-weight:600;letter-spacing:.02em;padding:7px 22px;text-align:center}
+.cell.is-pick{outline:3px solid #5B3CC4;outline-offset:2px}
+@keyframes pkpulse{0%{box-shadow:0 0 0 0 rgba(91,60,196,.45)}100%{box-shadow:0 0 0 14px rgba(91,60,196,0)}}
+.pk-main.flash{animation:pkpulse 1.2s ease-out 2}
 </style>
 </head><body>
 
@@ -420,7 +436,7 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
   </div>
 </section>
 
-<div id="tabanchor"></div><div class="tabbar"><div class="tabs" id="tabs" role="tablist" aria-label="Lists"></div></div>
+<div class="pkban" id="pkban" hidden></div><div id="tabanchor"></div><div class="tabbar"><div class="tabs" id="tabs" role="tablist" aria-label="Lists"></div></div>
 
 <section class="sec" id="pick" data-tab="fall" style="padding-bottom:40px">
   <div class="wide">
@@ -644,7 +660,9 @@ function card(r,label,kind){
   const factT=kind==="gain"?"The run":kind==="vol"?"The swings":"The drop";
   const o=r.opt,p=o&&o.puts&&(o.puts.find(x=>x.d===30)||o.puts[0]);
   const badges=patBadge(r)+earnBadge(r)+sigBadge(r);
-  return `<article class="card" data-s="${r.s}" data-label="${esc(label)}" data-kind="${kind}">
+  const isPick=window.FK.PK&&window.FK.PK.cur&&window.FK.PK.cur.s===r.s&&r.mtd<0;
+  return `<article class="card${isPick?" is-pick":""}" data-s="${r.s}" data-label="${esc(label)}" data-kind="${kind}">
+    ${isPick?`<span class="pickflag">◆ ${window.FK.PK.cur.final?"This month's pick (final)":"This month's pick (leading)"}</span>`:""}
     <header class="c-hd">
       <div class="ctop"><span class="rank">${label}</span><span class="pills">${kind==="fall"?statusPill(r):wkPill(r)}${starBtn(r.s)}</span></div>
       <div class="idrow">
@@ -738,7 +756,7 @@ if(V.length)$("#vsub").textContent=`The ${V.length} S&P 500 stocks with the wild
 const heatT=v=>{const a=Math.min(Math.abs(v)/12,1);return a<0.5?0.08+0.6*a:0.72+0.28*(a-0.5)/0.5};
 const heatColor=v=>{const lo=v<0?[253,227,225]:[222,242,228],hi=v<0?[196,20,20]:[28,128,62],t=heatT(v);return `rgb(${lo.map((x,i)=>Math.round(x+(hi[i]-x)*t))})`};
 const heatInk=v=>heatT(v)<0.5?(v<0?"#8A1A12":"#1B5E30"):"#fff";
-$("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell" data-s="${s}" href="#chart=${encodeURIComponent(s)}" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open chart"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
+$("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell${window.FK.PK&&window.FK.PK.cur&&window.FK.PK.cur.s===s?" is-pick":""}" data-s="${s}" href="#chart=${encodeURIComponent(s)}" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open chart"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
 $("#heat").addEventListener("click",e=>{if(e.target.closest("[data-star]"))return;const c=e.target.closest("a.cell");if(!c||e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault();window.FKsv.open(c.dataset.s,BIG.map(b=>b[0]),true,null)});
 LISTS.forEach(L=>L.S&&L.S.run());
 if(!VB.length){const x=document.querySelector(".subnav .vbl");if(x)x.hidden=true}
@@ -748,6 +766,9 @@ function renderPick(){
   const PK=window.FK.PK,el=$("#pkbody");
   if(!PK||!PK.cur){$("#pick").classList.add("tabhide-empty");return}
   const c=PK.cur,row=D.find(r=>r.s===c.s),t=PK.tot||{};
+  const ban=$("#pkban");ban.hidden=false;
+  ban.innerHTML=`<a href="#pick" id="pkgo"><span><span class="l">◆ This month's pattern pick</span><br><span class="t">${esc(c.s)}</span> <span class="n">${esc(c.name||"")} · ${c.score}/4 · ${pct(c.drop)} this month</span></span><span class="st">${c.final?"Final · locked":"Leading · locks at month-end close"}</span><span class="go">See the pick ›</span></a>`;
+  $("#pkgo").addEventListener("click",e=>{e.preventDefault();setTab("fall",false);const tgt=document.getElementById("pick");const y=tgt.getBoundingClientRect().top+scrollY-(document.querySelector(".nav").offsetHeight+document.querySelector(".tabbar").offsetHeight)+30;scrollTo({top:y,behavior:"smooth"});const m=document.querySelector(".pk-main");if(m){m.classList.remove("flash");void m.offsetWidth;m.classList.add("flash")}});
   const [y,m]=c.m.split("-").map(Number);const mName=new Date(Date.UTC(y,m-1,15)).toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
   let ld=new Date(Date.UTC(y,m,0));while(ld.getUTCDay()===0||ld.getUTCDay()===6)ld.setUTCDate(ld.getUTCDate()-1);
   const ldTxt=ld.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
