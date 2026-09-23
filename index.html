@@ -438,7 +438,7 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
   </div>
 </section>
 
-<div class="pkban" id="pkban" hidden></div><div id="tabanchor"></div><div class="tabbar"><div class="tabs" id="tabs" role="tablist" aria-label="Lists"></div></div>
+<div id="tabanchor"></div><div class="tabbar"><div class="tabs" id="tabs" role="tablist" aria-label="Lists"></div></div>
 
 <section class="sec" id="pick" data-tab="pick" style="padding-bottom:64px">
   <div class="wide">
@@ -773,9 +773,6 @@ function renderPick(){
   const PK=window.FK.PK,el=$("#pkbody");
   if(!PK||!PK.cur){$("#pick").classList.add("tabhide-empty");return}
   const c=PK.cur,row=D.find(r=>r.s===c.s),t=PK.tot||{};
-  const ban=$("#pkban");ban.hidden=false;
-  ban.innerHTML=`<a href="#pick" id="pkgo"><span><span class="l">◆ This month's pattern pick</span><br><span class="t">${esc(c.s)}</span> <span class="n">${esc(c.name||"")} · ${c.score}/4 · ${pct(c.drop)} this month</span></span><span class="st">${c.final?"Final · locked":"Leading · locks at month-end close"}</span><span class="go">Open the pick tab ›</span></a>`;
-  $("#pkgo").addEventListener("click",e=>{e.preventDefault();setTab("pick",false);const y=document.getElementById("tabanchor").offsetTop-document.querySelector(".nav").offsetHeight;scrollTo({top:y,behavior:"smooth"});const m=document.querySelector(".pk-main");if(m){m.classList.remove("flash");void m.offsetWidth;m.classList.add("flash")}});
   const [y,m]=c.m.split("-").map(Number);const mName=new Date(Date.UTC(y,m-1,15)).toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
   let ld=new Date(Date.UTC(y,m,0));while(ld.getUTCDay()===0||ld.getUTCDay()===6)ld.setUTCDate(ld.getUTCDate()-1);
   const ldTxt=ld.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
