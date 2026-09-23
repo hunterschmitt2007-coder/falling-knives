@@ -25,6 +25,7 @@ import yfinance as yf
 CONSTITUENTS = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
 SKIP_BIG = {"GOOG", "FOX", "NWS"}          # second share classes
 TOP_N, BIG_N = 50, 50
+GAIN_N, VOL_N = 50, 50
 
 
 def r2(x):
@@ -117,6 +118,19 @@ def metrics(s, df, month_start):
             r = C[i] / C[i - 1] - 1
             if worst is None or r < worst[0]: worst = (r, dates[i])
     ret = lambda k: (C[-1] / C[max(0, n - 1 - k)] - 1) * 100
+    # volatility: annualized stdev of daily log returns
+    lr = [math.log(C[i] / C[i - 1]) for i in range(1, n) if C[i - 1] > 0 and C[i] > 0]
+    def sd(x):
+        if len(x) < 2: return None
+        m = sum(x) / len(x); return math.sqrt(sum((v - m) ** 2 for v in x) / (len(x) - 1))
+    v30 = sd(lr[-21:]); v1y = sd(lr[-252:])
+    dr = [(dates[i], C[i] / C[i - 1] - 1) for i in range(max(1, n - 21), n)]
+    bu = max(dr, key=lambda x: x[1]); bd = min(dr, key=lambda x: x[1])
+    uw = 0
+    for i in range(len(done) - 1, 0, -1):
+        if done[i].get("r", 0) > 0: uw += 1
+        else: break
+    last_neg = next((done[i] for i in range(len(done) - 1, 0, -1) if done[i].get("r", 0) < 0), None)
     iso = lambda d: d.isoformat() if d else None
     return {
         "s": s, "last": r2(last), "prev": r2(C[-2]), "day": r2((C[-1] / C[-2] - 1) * 100), "asof": iso(last_d),
@@ -133,6 +147,13 @@ def metrics(s, df, month_start):
         "rsi": r2(rsi), "v50": r2((last / sma(50) - 1) * 100), "v200": r2((last / sma(200) - 1) * 100),
         "volx": r2(vol(5) / vol(50)) if vol(50) else None,
         "worstDay": r2(worst[0] * 100) if worst else None, "worstDayD": iso(worst[1]) if worst else None,
+        "vol30": r2(v30 * math.sqrt(252) * 100) if v30 else None,
+        "vol1y": r2(v1y * math.sqrt(252) * 100) if v1y else None,
+        "adm": r2(sum(abs(x[1]) for x in dr) / len(dr) * 100),
+        "bigUp": r2(bu[1] * 100), "bigUpD": iso(bu[0]), "bigDn": r2(bd[1] * 100), "bigDnD": iso(bd[0]),
+        "upWks": uw, "lastNegWk": iso(last_neg["e"]) if last_neg else None,
+        "lastNegWkRet": r2(last_neg["r"] * 100) if last_neg else None,
+        "_dr": {dates[i].isoformat(): C[i] / C[i - 1] - 1 for i in range(max(1, n - 252), n)},
         "wks": [r2(w.get("r", 0) * 100) for w in W[-10:]],
         "wkends": [w["e"].strftime("%b %-d") for w in W[-10:]],
     }
@@ -201,7 +222,7 @@ def write_history(syms, frames, uni, M):
             "v": [0 if pd.isna(v) else int(v) for v in df["Volume"]],
         }
         if s in M:
-            out["m"] = {k: v for k, v in M[s].items() if k not in ("base",)}
+            out["m"] = {k: v for k, v in M[s].items() if k != "base" and not k.startswith("_")}
         with open(f"history/{s}.json", "w") as f:
             json.dump(out, f, separators=(",", ":"))
         n += 1
@@ -248,13 +269,26 @@ def main():
     spx = metrics("^GSPC", frames["^GSPC"], month_start)
     spy = metrics("SPY", frames["SPY"], month_start) if "SPY" in frames else None
 
+    sdr = spx["_dr"]
+    for r in M.values():
+        pairs = [(v, sdr[d]) for d, v in r["_dr"].items() if d in sdr]
+        if len(pairs) > 60:
+            mx = sum(p[1] for p in pairs) / len(pairs); my = sum(p[0] for p in pairs) / len(pairs)
+            cov = sum((p[0] - my) * (p[1] - mx) for p in pairs); var = sum((p[1] - mx) ** 2 for p in pairs)
+            r["beta"] = r2(cov / var) if var else None
+        else:
+            r["beta"] = None
+
     caps = market_caps(syms)
     ranked = sorted(M.values(), key=lambda r: r["mtd"])
     top = ranked[:TOP_N]
+    gain = sorted(M.values(), key=lambda r: -r["mtd"])[:GAIN_N]
+    vol = sorted([r for r in M.values() if r["vol30"]], key=lambda r: -r["vol30"])[:VOL_N]
     big = sorted([s for s in syms if caps.get(s) and s not in SKIP_BIG and s in M],
                  key=lambda s: -caps[s])[:BIG_N]
     bc = sorted([M[s] for s in big if M[s]["mtd"] < 0], key=lambda r: r["mtd"])
-    card_syms = sorted({r["s"] for r in top} | {r["s"] for r in bc})
+    vbc = sorted([M[s] for s in big if M[s]["vol30"]], key=lambda r: -r["vol30"])
+    card_syms = sorted({r["s"] for r in top} | {r["s"] for r in bc} | {r["s"] for r in gain} | {r["s"] for r in vol})
     with ThreadPoolExecutor(6) as ex:
         det = dict(ex.map(details, card_syms))
 
@@ -263,13 +297,15 @@ def main():
     except FileNotFoundError:
         reasons = {}
 
-    def card(r, rank):
-        s = r["s"]; o = {k: v for k, v in r.items() if k not in ("base", "wkends")}
+    def card(r, rank, kind="fall"):
+        s = r["s"]; o = {k: v for k, v in r.items() if k not in ("base", "wkends") and not k.startswith("_")}
         o.update(det.get(s, {}))
         o["name"] = uni[s]["name"]; o["sector"] = uni[s]["sector"]; o["rank"] = rank
         o["mc"] = r2(caps[s] / 1e9) if caps.get(s) else None
         rs = reasons.get(s)
-        if rs and isinstance(rs, list) and len(rs) == 3:
+        if kind == "gain" or (kind == "vol" and not (rs and r["mtd"] < 0)):
+            o["theme"], o["conf"], o["why"] = "In the news", "News", ""
+        elif rs and isinstance(rs, list) and len(rs) == 3:
             o["theme"], o["conf"], o["why"] = rs
             o.pop("news", None)
         else:
@@ -280,6 +316,10 @@ def main():
     capRank = {s: i + 1 for i, s in enumerate(big)}
     BC = [card(r, i + 1) for i, r in enumerate(bc)]
     for o in BC: o["capRank"] = capRank[o["s"]]
+    G = [card(r, i + 1, "gain") for i, r in enumerate(gain)]
+    V = [card(r, i + 1, "vol") for i, r in enumerate(vol)]
+    VB = [card(r, i + 1, "vol") for i, r in enumerate(vbc)]
+    for o in VB: o["capRank"] = capRank[o["s"]]
     BIG = [[s, round(caps[s] / 1e9), M[s]["mtd"]] for s in big]
     BASE = {s: M[s]["base"] for s in set(card_syms) | set(big)}
     if spy: BASE["SPY"] = spy["base"]
@@ -291,18 +331,20 @@ def main():
     meta = {
         "asof": last_date.isoformat(), "monthName": month_name, "year": last_date.year,
         "spx_mtd": spx["mtd"], "ndown": sum(1 for x in all_mtd if x < 0), "n": len(M),
-        "median": all_mtd[len(all_mtd) // 2],
+        "median": all_mtd[len(all_mtd) // 2], "nup": sum(1 for x in all_mtd if x > 0),
+        "spx_vol30": spx["vol30"],
+        "medVol": sorted(r["vol30"] for r in M.values() if r["vol30"])[len(M) // 2 - 1],
         "wkdates": ["Wk of " + x for x in top[0]["wkends"][:-1]] + ["This week (so far)"],
         "stories": stories or auto_stories(D, month_name),
         "storySub": stories_cfg.get("sub") if stories else "The biggest themes behind this list.",
         "generated": dt.datetime.utcnow().isoformat(timespec="seconds") + "Z",
     }
     write_history(sorted(set(card_syms) | set(big)), frames, uni, M)
-    payload = {"D": D, "BC": BC, "BIG": BIG, "M": meta, "BASE": BASE}
+    payload = {"D": D, "BC": BC, "BIG": BIG, "M": meta, "BASE": BASE, "G": G, "V": V, "VB": VB}
     with open("data.js", "w") as f:
         f.write("window.FK=" + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n")
     pend = [o["s"] for o in D + BC if o["conf"] == "Pending"]
-    print(f"wrote data.js: {len(D)} knives, {len(BC)} falling blue chips; pending reasons: {pend}")
+    print(f"wrote data.js: {len(D)} knives, {len(BC)} falling blue chips, {len(G)} winners, {len(V)} volatile, {len(VB)} blue chips by volatility; pending reasons: {pend}")
 
 
 if __name__ == "__main__":

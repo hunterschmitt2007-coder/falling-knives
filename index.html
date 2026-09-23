@@ -249,6 +249,12 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 .sv-wide{margin-top:16px}
 .sv-spin{width:26px;height:26px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.fb.fb4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1000px){.fb.fb4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.showall{grid-column:1/-1;justify-self:center;border:1px solid var(--line);background:var(--tile);color:var(--blue);font-size:15px;font-weight:600;padding:10px 22px;border-radius:980px;cursor:pointer;margin-top:4px}
+.showall:hover{border-color:var(--blue)}
+[data-hide-empty][hidden]{display:none}
+@media (max-width:560px){.nav-in{overflow-x:auto;scrollbar-width:none}.nav-in::-webkit-scrollbar{display:none}.nav a{flex:0 0 auto}.nav .livestat{flex:0 0 auto;max-width:none}}
 </style>
 </head><body>
 
@@ -257,7 +263,9 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
   <div class="nav-in">
     <b>Falling Knives</b><span id="livestat" class="livestat wait">Loading…</span>
     <a href="#overview" class="opt">Overview</a>
-    <a href="#knives">The 50</a>
+    <a href="#knives">Falling</a>
+    <a href="#winners">Winners</a>
+    <a href="#volatile">Volatile</a>
     <a href="#bluechips">Blue Chips</a>
     <a href="#method" class="opt">Method</a>
   </div>
@@ -288,6 +296,22 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
   </div>
 </section>
 
+<section class="sec bg2" id="winners" data-hide-empty>
+  <div class="wide">
+    <div class="head"><p class="eyebrow" style="color:var(--green)">The other side of the board</p><h2>The Winners.</h2><p id="gsub">The 50 best performers this month.</p></div>
+    <div id="barG"></div>
+    <div class="grid" id="gridG"></div>
+  </div>
+</section>
+
+<section class="sec" id="volatile" data-hide-empty>
+  <div class="wide">
+    <div class="head"><p class="eyebrow" style="color:var(--amber)">Biggest swings</p><h2>Most Volatile.</h2><p id="vsub">The 50 S&amp;P 500 stocks moving the most.</p></div>
+    <div id="barV"></div>
+    <div class="grid" id="gridV"></div>
+  </div>
+</section>
+
 <section class="sec band" id="bluechips">
   <div class="wide">
     <div class="head"><p class="eyebrow">The 50 largest S&amp;P 500 companies</p><h2>Blue Chips.</h2><p id="bcsub"></p></div>
@@ -296,6 +320,11 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
     <div class="head" style="padding-top:40px"><h2 style="font-size:clamp(26px,3.6vw,36px)">The blue chips that are falling.</h2></div>
     <div id="bar2"></div>
     <div class="grid" id="grid2"></div>
+    <div data-hide-empty>
+      <div class="head" style="padding-top:24px"><h2 style="font-size:clamp(26px,3.6vw,36px)">The most volatile blue chips.</h2><p>All 50 of the biggest companies, ranked by how much they've been swinging over the last 30 trading days.</p></div>
+      <div id="barVB"></div>
+      <div class="grid" id="gridVB"></div>
+    </div>
   </div>
 </section>
 
@@ -303,6 +332,7 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
   <div class="in">
     <div><b>How it's measured.</b> This month = change from the last close of the previous month to the latest close. "Falling since high" counts trading days since the 52-week closing high. "Last up week" is the most recent completed week (Friday close) that finished above the week before; the current week is shown separately because it isn't finished. Down-week streak = consecutive completed down weeks. The weekly chart runs oldest to newest, with gains above the line and losses below; the dashed last bar is the week still in progress.</div>
     <div><b>Reasons</b> come from news coverage around each stock's biggest down days this month. High confidence = a specific, reported catalyst. Medium = a sector or theme move with supporting coverage. Low = no single catalyst found.</div>
+    <div><b>Winners</b> = the 50 S&amp;P 500 members with the biggest gain this month, measured the same way. <b>Volatility</b> = how much a stock's daily price swings, as the annualized standard deviation of daily returns over the last 30 trading days (1-year volatility uses the past year). A stock at 60% swings roughly three times as much as one at 20%. Average daily move is the typical size of one day's move, up or down. Beta compares a stock's daily moves with the S&amp;P 500's over the past year: 1.0 moves with the market, 2.0 moves about twice as much.</div>
     <div><b>Blue chips</b> = the 50 largest S&amp;P 500 companies by market cap (one share class per company). Analyst upside = average price target vs. last close.</div>
     <div><b>Data:</b> Yahoo Finance daily closes (split-adjusted) for all 503 S&amp;P 500 members, plus Yahoo quote data for valuation and analyst targets. Rankings and reasons refresh every weekday after the close (about 5:30pm ET). Prices on the cards, the blue-chip tiles and the S&amp;P figure update live from Finnhub during market hours, roughly every minute per stock (faster for the stocks on your screen); % this month, % off the high and this week's bar recalculate from the live price. Confirm prices with your broker before trading. For information only, not investment advice.</div>
   </div>
@@ -319,6 +349,8 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 
 <script>
 const {D,BC,BIG,M}=window.FK;
+const G=window.FK.G||[],V=window.FK.V||[],VB=window.FK.VB||[];
+const ALL=[...D,...BC,...G,...V,...VB];
 const $=s=>document.querySelector(s);
 const dt=(d,y)=>{if(!d)return"—";const[a,b,c]=d.split("-");return new Date(Date.UTC(+a,+b-1,+c)).toLocaleDateString("en-US",Object.assign({month:"short",day:"numeric",timeZone:"UTC"},y?{year:"numeric"}:{}))};
 const rnd=(x,dp)=>(Math.round(Math.abs(x)*10**dp+1e-9)/10**dp).toFixed(dp);
@@ -327,7 +359,7 @@ const cls=v=>v==null?"":v<0?"neg":v>0?"pos":"";
 const money=v=>v==null?"—":"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const capFmt=mc=>mc==null?"—":mc>=1000?"$"+(mc/1000).toFixed(2)+"T":"$"+Math.round(mc)+"B";
-[...D,...BC].forEach(r=>{r.upside=r.tgt&&r.last?(r.tgt/r.last-1)*100:null});
+ALL.forEach(r=>{r.upside=r.tgt&&r.last?(r.tgt/r.last-1)*100:null});
 
 $("#eyebrow").textContent=`S&P 500 · ${M.monthName} ${M.year}`;
 $("#knivessub").textContent=`Ranked by ${M.monthName} loss. Filter by sector, reason or confidence.`;
@@ -361,55 +393,89 @@ function bars(w){
   });
   return s+"</svg>";
 }
-function card(r,label,open){
+function wkPill(r){
+  if(r.curWk<0)return `<span class="pill p-fall">Down this week</span>`;
+  if(r.curWk>0)return `<span class="pill p-up">Up this week</span>`;
+  return `<span class="pill p-flat">Flat this week</span>`;
+}
+const volFmt=v=>v==null?"—":Math.round(v)+"%";
+const wkStr=(d,ret)=>d?"Week of "+dt(d):"—";
+function factsFor(r,kind){
   const since=r.tdSinceHi>21?`about ${Math.round(r.tdSinceHi/21)} months`:`${r.tdSinceHi} days`;
-  return `<article class="card" data-s="${r.s}" data-label="${esc(label)}">
-    <div class="ctop"><span class="rank">${label}</span>${statusPill(r)}</div>
+  if(kind==="gain")return [
+    ["Off 52-week high",pct(r.dd52),cls(r.dd52),r.dd52!=null&&r.dd52>-1?"at a 52-week high":""],
+    ["52-week high",money(r.hi52),"",dt(r.hi52d,1)],
+    ["Up-week streak",r.upWks==null?"—":r.upWks+(r.upWks===1?" week":" weeks"),"",""],
+    ["Last down week",wkStr(r.lastNegWk),"",r.lastNegWkRet!=null?"closed "+pct(r.lastNegWkRet):""],
+    ["Year to date",pct(r.ytd),cls(r.ytd),""],
+    ["vs S&amp;P 500 this month",pct(r.mtd-M.spx_mtd),cls(r.mtd-M.spx_mtd),""]];
+  if(kind==="vol")return [
+    ["Average daily move",r.adm==null?"—":"±"+rnd(r.adm,1)+"%","","last 30 trading days"],
+    ["This month",pct(r.mtd),cls(r.mtd),""],
+    ["Biggest up day",pct(r.bigUp),cls(r.bigUp),r.bigUpD?dt(r.bigUpD):""],
+    ["Biggest down day",pct(r.bigDn),cls(r.bigDn),r.bigDnD?dt(r.bigDnD):""],
+    ["1-year volatility",volFmt(r.vol1y),"",M.medVol?"S&P median "+volFmt(M.medVol)+" (30-day)":""],
+    ["Beta vs S&amp;P 500",r.beta==null?"—":(r.beta<0?"−":"")+Math.abs(r.beta).toFixed(2),"",r.beta!=null?(r.beta>1.5?"swings much more than the market":r.beta>1?"swings more than the market":"swings less than the market"):""]];
+  return [
+    ["Off 52-week high",pct(r.dd52),cls(r.dd52),r.offLo!=null&&r.offLo<1?"at a 52-week low":""],
+    ["52-week high",money(r.hi52),"",dt(r.hi52d,1)],
+    ["Falling since high",r.tdSinceHi+" trading days","",since],
+    ["Last up week",r.lastPosWk?"Week of "+dt(r.lastPosWk):"—","","closed "+pct(r.lastPosWkRet)],
+    ["Down-week streak",r.downWks+" "+(r.downWks===1?"week":"weeks"),"",""],
+    ["vs S&amp;P 500 this month",pct(r.mtd-M.spx_mtd),cls(r.mtd-M.spx_mtd),""]];
+}
+function whyBlock(r){
+  const hl=`<ul class="hl">${(r.news||[]).map(n=>`<li><span>${esc(n[0])}</span> ${esc(n[1])}</li>`).join("")||"<li>No recent headlines found.</li>"}</ul>`;
+  if(r.conf==="News")return `<div class="tag">In the news<span>Latest headlines</span></div>${hl}`;
+  if(r.conf==="Pending")return `<div class="tag">${esc(r.theme)}<span>Not yet researched</span></div><p class="pend">New on the list. Latest headlines:</p>${hl}`;
+  return `<div class="tag">${esc(r.theme)}<span>${esc(r.conf)} confidence</span></div><p>${esc(r.why)}</p>`;
+}
+function card(r,label,kind){
+  kind=kind||"fall";
+  const big=kind==="vol"?`<div class="big num">${volFmt(r.vol30)}<small>30-day volatility</small></div>`:`<div class="big num ${cls(r.mtd)}">${pct(r.mtd)}<small>this month</small></div>`;
+  return `<article class="card" data-s="${r.s}" data-label="${esc(label)}" data-kind="${kind}">
+    <div class="ctop"><span class="rank">${label}</span>${kind==="fall"?statusPill(r):wkPill(r)}</div>
     <div class="idrow">
       <div style="min-width:0"><div class="tk">${r.s}</div><div class="nm">${esc(r.name)}</div></div>
-      <div class="big num ${cls(r.mtd)}">${pct(r.mtd)}<small>this month</small></div>
+      ${big}
     </div>
     <div class="px"><span class="pxv num">${money(r.last)}</span><span class="pxc num ${cls(r.day)}">${r.day>0?"+":r.day<0?"−":""}$${rnd(r.last-r.prev,2)} (${pct(r.day,2)})</span><span class="pxl">${r.liveT?`<b class="lvdot"></b>Live · ${r.liveT}`:"Close · "+dt(M.asof)}</span><a class="live" href="https://finance.yahoo.com/quote/${encodeURIComponent(r.s)}/" target="_blank" rel="noopener" aria-label="Live ${r.s} quote on Yahoo Finance"><i></i>Live quote ↗</a></div>
     <div class="spark"><div class="lbl"><span>Weekly returns, % · last 10 weeks</span><span>${esc(r.sector||r.ind||"")}</span></div>${bars(r.wks)}<div class="lbl"><span>${M.wkdates[0]}</span><span>This week (so far)</span></div></div>
-    <dl class="facts">
-      <div><dt>Off 52-week high</dt><dd class="num ${cls(r.dd52)}">${pct(r.dd52)}${r.offLo!=null&&r.offLo<1?"<small>at a 52-week low</small>":""}</dd></div>
-      <div><dt>52-week high</dt><dd class="num">${money(r.hi52)}<small>${dt(r.hi52d,1)}</small></dd></div>
-      <div><dt>Falling since high</dt><dd class="num">${r.tdSinceHi} trading days<small>${since}</small></dd></div>
-      <div><dt>Last up week</dt><dd class="num">${r.lastPosWk?"Week of "+dt(r.lastPosWk):"—"}<small>closed ${pct(r.lastPosWkRet)}</small></dd></div>
-      <div><dt>Down-week streak</dt><dd class="num">${r.downWks} ${r.downWks===1?"week":"weeks"}</dd></div>
-      <div><dt>vs S&amp;P 500 this month</dt><dd class="num ${cls(r.mtd-M.spx_mtd)}">${pct(r.mtd-M.spx_mtd)}</dd></div>
-    </dl>
-    <div class="why"><div class="tag">${esc(r.theme)}<span>${r.conf==="Pending"?"Not yet researched":r.conf+" confidence"}</span></div>${r.conf==="Pending"?`<p class="pend">New on the list. Latest headlines:</p><ul class="hl">${(r.news||[]).map(n=>`<li><span>${esc(n[0])}</span> ${esc(n[1])}</li>`).join("")||"<li>No recent headlines found.</li>"}</ul>`:`<p>${esc(r.why)}</p>`}</div>
+    <dl class="facts">${factsFor(r,kind).map(([k,v,c,sm])=>`<div><dt>${k}</dt><dd class="num ${c}">${v}${sm?`<small>${esc(sm)}</small>`:""}</dd></div>`).join("")}</dl>
+    <div class="why">${whyBlock(r)}</div>
     <button type="button" class="more" data-s="${r.s}" aria-label="Open ${r.s} chart and full stats">Chart &amp; full stats ›</button>
   </article>`;
 }
 
+const LIMIT=12;
 const passSt=(r,st)=>!st||(st==="fall"&&r.curWk<0)||(st==="bounce"&&r.curWk>0)||(st==="low"&&r.offLo!=null&&r.offLo<1)||(st==="os"&&r.rsi!=null&&r.rsi<30);
 const SORTS=[["rank","Worst this month",1],["dd52","Furthest off 52-wk high",1],["tdSinceHi","Longest decline",-1],["downWks","Longest down-week streak",-1],["rsi","Most oversold (RSI)",1],["upside","Biggest analyst upside",-1],["mc","Biggest company",-1],["day","Biggest drop last session",1],["last","Price: low to high",1]];
 const STATUS=[["","All"],["fall","Still falling this week"],["bounce","Bouncing this week"],["low","At a 52-week low"],["os","Oversold (RSI < 30)"]];
 function opts(list,sel){return list.map(([v,l])=>`<option value="${esc(v)}"${v===sel?" selected":""}>${esc(l)}</option>`).join("")}
 function tally(rows,k){const c={};rows.forEach(r=>{const v=r[k]||"Other";c[v]=(c[v]||0)+1});return c}
-function makeBar(el,rows,p,noun,cb){
-  const S={sector:"",theme:"",conf:"",st:"",q:"",sort:"rank",open:new Set()};
+function makeBar(el,rows,p,noun,cb,opt={}){
+  const SO=opt.sorts||SORTS,RS=opt.reasons!==false;
+  const S={sector:"",theme:"",conf:"",st:"",q:"",sort:"rank",open:new Set(),all:false};
   const sec=tally(rows,"sector"),th=tally(rows,"theme"),cf=tally(rows,"conf");
   const byCount=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([k,n])=>[k,`${k} (${n})`]);
   const confList=["High","Medium","Low","Pending"].filter(k=>cf[k]).map(k=>[k,`${k} (${cf[k]})`]);
-  el.innerHTML=`<div class="fb">
+  el.innerHTML=`<div class="fb${RS?"":" fb4"}">
     <label class="fl" for="${p}sector"><span>Sector</span><select class="field" id="${p}sector" data-k="sector">${opts([["","All sectors"],...byCount(sec)],"")}</select></label>
-    <label class="fl" for="${p}theme"><span>Reason</span><select class="field" id="${p}theme" data-k="theme">${opts([["","All reasons"],...byCount(th)],"")}</select></label>
-    <label class="fl" for="${p}conf"><span>Confidence</span><select class="field" id="${p}conf" data-k="conf">${opts([["","All"],...confList],"")}</select></label>
+    ${RS?"":"<!--"}<label class="fl" for="${p}theme"><span>Reason</span><select class="field" id="${p}theme" data-k="theme">${opts([["","All reasons"],...byCount(th)],"")}</select></label>
+    <label class="fl" for="${p}conf"><span>Confidence</span><select class="field" id="${p}conf" data-k="conf">${opts([["","All"],...confList],"")}</select></label>${RS?"":"-->"}
     <label class="fl" for="${p}st"><span>Status</span><select class="field" id="${p}st" data-k="st">${opts(STATUS,"")}</select></label>
-    <label class="fl" for="${p}sort"><span>Sort</span><select class="field" id="${p}sort" data-k="sort">${opts(SORTS.map(x=>[x[0],x[1]]),"rank")}</select></label>
+    <label class="fl" for="${p}sort"><span>Sort</span><select class="field" id="${p}sort" data-k="sort">${opts(SO.map(x=>[x[0],x[1]]),"rank")}</select></label>
     <label class="fl" for="${p}q"><span>Search</span><input class="field" id="${p}q" data-k="q" type="search" placeholder="Ticker or company" autocomplete="off"></label>
   </div>
   <div class="fbfoot"><span id="${p}count"></span><button type="button" class="clear" id="${p}clear" hidden>Clear filters</button></div>`;
   const run=()=>{
     const q=S.q.trim().toLowerCase();
     let out=rows.filter(r=>(!S.sector||r.sector===S.sector)&&(!S.theme||r.theme===S.theme)&&(!S.conf||r.conf===S.conf)&&passSt(r,S.st)&&(!q||(r.s+" "+r.name).toLowerCase().includes(q)));
-    const d=(SORTS.find(x=>x[0]===S.sort)||SORTS[0])[2],k=S.sort;
+    const so=SO.find(x=>x[0]===S.sort)||SO[0],d=so[2],k=so[3]||so[0];
     out.sort((a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return a.rank-b.rank;if(x==null)return 1;if(y==null)return -1;return (x-y)*d||a.rank-b.rank});
     const filtered=S.sector||S.theme||S.conf||S.st||q;
-    $("#"+p+"count").textContent=filtered?`Showing ${out.length} of ${rows.length} ${noun}`:`Showing all ${rows.length} ${noun}`;
+    const shown=S.all?out.length:Math.min(out.length,LIMIT);
+    $("#"+p+"count").textContent=filtered?`${out.length} of ${rows.length} ${noun} match`+(shown<out.length?` · showing ${shown}`:""):shown<out.length?`Showing ${shown} of ${rows.length} ${noun}`:`Showing all ${rows.length} ${noun}`;
     $("#"+p+"clear").hidden=!filtered;
     cb(out,S);
   };
@@ -419,23 +485,40 @@ function makeBar(el,rows,p,noun,cb){
   S.run=run;return S;
 }
 
-const S1=makeBar($("#bar1"),D,"f1","stocks",(rows,S)=>{
-  S.rows=rows;$("#grid").innerHTML=rows.length?rows.map(r=>card(r,"No. "+r.rank,S.open.has(r.s))).join(""):`<p class="empty">No stocks match these filters.</p>`;
+const SORTS_G=[["rank","Best this month",1],["dd52","Closest to 52-wk high",-1],["upWks","Longest up-week streak",-1],["ytd","Best year to date",-1],["vol30","Most volatile",-1],["mc","Biggest company",-1],["day","Biggest gain last session",-1],["last","Price: low to high",1]];
+const SORTS_V=[["rank","Most volatile (30-day)",1],["adm","Biggest average daily move",-1],["beta","Highest beta",-1],["vol1y","Most volatile (1-year)",-1],["mtd","Worst this month",1],["mtdUp","Best this month",-1,"mtd"],["mc","Biggest company",-1],["last","Price: low to high",1]];
+const LISTS=[
+  {id:"grid",bar:"bar1",p:"f1",rows:D,kind:"fall",noun:"stocks",label:r=>"No. "+r.rank,olabel:r=>`No. ${r.rank} falling knife`},
+  {id:"gridG",bar:"barG",p:"fg",rows:G,kind:"gain",noun:"stocks",label:r=>"No. "+r.rank,olabel:r=>`No. ${r.rank} best performer`,sorts:SORTS_G,reasons:false},
+  {id:"gridV",bar:"barV",p:"fv",rows:V,kind:"vol",noun:"stocks",label:r=>"No. "+r.rank,olabel:r=>`No. ${r.rank} most volatile`,sorts:SORTS_V,reasons:false},
+  {id:"grid2",bar:"bar2",p:"f2",rows:BC,kind:"fall",noun:"falling blue chips",label:r=>`No. ${r.capRank} by size`,olabel:r=>`No. ${r.capRank} by size`},
+  {id:"gridVB",bar:"barVB",p:"fvb",rows:VB,kind:"vol",noun:"blue chips",label:r=>`No. ${r.capRank} by size`,olabel:r=>`No. ${r.rank} most volatile blue chip`,sorts:SORTS_V.map(x=>x[0]==="rank"?["rank","Most volatile (30-day)",1]:x),reasons:false},
+];
+const listOf=el=>LISTS.find(L=>L.id===el.closest(".grid").id);
+LISTS.forEach(L=>{
+  const g=$("#"+L.id);
+  if(!L.rows.length){const sec=g.closest("[data-hide-empty]");if(sec)sec.hidden=true;return}
+  L.S=makeBar($("#"+L.bar),L.rows,L.p,L.noun,(rows,S)=>{
+    S.rows=rows;const show=S.all?rows:rows.slice(0,LIMIT);
+    g.innerHTML=rows.length?show.map(r=>card(r,L.label(r),L.kind)).join("")+(rows.length>LIMIT?`<button type="button" class="showall" data-all="1">${S.all?"Show fewer":`Show all ${rows.length}`}</button>`:""):`<p class="empty">No ${L.noun} match these filters.</p>`;
+  },{sorts:L.sorts,reasons:L.reasons});
+  g.addEventListener("click",e=>{
+    if(e.target.closest("[data-all]")){L.S.all=!L.S.all;L.S.run();if(!L.S.all)g.closest("section").scrollIntoView({behavior:"smooth"});return}
+    if(e.target.closest("a"))return;const c=e.target.closest("article.card");if(c)window.FKsv.open(c.dataset.s,(L.S.rows||L.rows).map(r=>r.s),true,L);
+  });
 });
-$("#grid").addEventListener("click",e=>{if(e.target.closest("a"))return;const c=e.target.closest("article.card");if(c)window.FKsv.open(c.dataset.s,(S1.rows||D).map(r=>r.s))});
+const S1=(LISTS[0].S)||{open:new Set()},S2=(LISTS[3].S)||{open:new Set()};
 
 const nDown=BIG.filter(b=>b[2]<0).length;
 $("#bcsub").textContent=`${nDown} of the 50 biggest companies are down in ${M.monthName}. Here's the whole group, largest first.`;
+if(G.length)$("#gsub").textContent=`The ${G.length} biggest gainers in the S&P 500 in ${M.monthName}. ${M.nup!=null?`${M.nup} of ${M.n} members are up this month.`:""}`;
+if(V.length)$("#vsub").textContent=`The ${V.length} S&P 500 stocks with the wildest swings over the last 30 trading days${M.spx_vol30?`. The S&P 500 itself is running at ${volFmt(M.spx_vol30)}`:""}.`;
 const heatT=v=>{const a=Math.min(Math.abs(v)/12,1);return a<0.5?0.08+0.6*a:0.72+0.28*(a-0.5)/0.5};
 const heatColor=v=>{const lo=v<0?[253,227,225]:[222,242,228],hi=v<0?[196,20,20]:[28,128,62],t=heatT(v);return `rgb(${lo.map((x,i)=>Math.round(x+(hi[i]-x)*t))})`};
 const heatInk=v=>heatT(v)<0.5?(v<0?"#8A1A12":"#1B5E30"):"#fff";
 $("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell" data-s="${s}" href="#chart=${encodeURIComponent(s)}" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open chart"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
-const S2=makeBar($("#bar2"),BC,"f2","falling blue chips",(rows,S)=>{
-  S.rows=rows;$("#grid2").innerHTML=rows.length?rows.map(r=>card(r,`No. ${r.capRank} by size`,S.open.has(r.s))).join(""):`<p class="empty">No blue chips match these filters.</p>`;
-});
-$("#grid2").addEventListener("click",e=>{if(e.target.closest("a"))return;const c=e.target.closest("article.card");if(c)window.FKsv.open(c.dataset.s,(S2.rows||BC).map(r=>r.s))});
-$("#heat").addEventListener("click",e=>{const c=e.target.closest("a.cell");if(!c||e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault();window.FKsv.open(c.dataset.s,BIG.map(b=>b[0]))});
-S1.run();S2.run();
+$("#heat").addEventListener("click",e=>{const c=e.target.closest("a.cell");if(!c||e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault();window.FKsv.open(c.dataset.s,BIG.map(b=>b[0]),true,null)});
+LISTS.forEach(L=>L.S&&L.S.run());
 /* ===== FULL-SCREEN STOCK VIEW (candles) ===== */
 (function(){
   const LIBS=["https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js",
@@ -447,13 +530,14 @@ S1.run();S2.run();
   const loadLib=()=>libP||(libP=new Promise((ok,no)=>{let i=0;const next=()=>{if(window.LightweightCharts)return ok(window.LightweightCharts);if(i>=LIBS.length)return no(new Error("lib"));const sc=document.createElement("script");sc.src=LIBS[i++];sc.async=true;sc.onload=()=>window.LightweightCharts?ok(window.LightweightCharts):next();sc.onerror=next;document.head.appendChild(sc)};next()}).catch(e=>{libP=null;throw e}));
   const histCache={};
   const loadHist=s=>histCache[s]||(histCache[s]=fetch(`history/${encodeURIComponent(s)}.json?v=${encodeURIComponent(M.generated||M.asof)}`).then(r=>{if(!r.ok)throw new Error("nohist");return r.json()}).catch(e=>{delete histCache[s];throw e}));
-  const rowFor=s=>D.find(r=>r.s===s)||BC.find(r=>r.s===s)||null;
+  let ctx=null;
+  const rowFor=s=>(ctx&&ctx.rows.find(r=>r.s===s))||ALL.find(r=>r.s===s)||null;
   const vol=v=>v==null?"—":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":String(v);
   const nyDate=t=>new Date(t*1000).toLocaleDateString("en-CA",{timeZone:"America/New_York"});
 
-  function statRows(r){
+  function statRows(r,kind){
     const since=r.tdSinceHi==null?"":r.tdSinceHi>21?`about ${Math.round(r.tdSinceHi/21)} months`:`${r.tdSinceHi} days`;
-    const key=[
+    const key=kind==="gain"||kind==="vol"?factsFor(r,kind).map(([k,v,c,sm])=>[k.replace("&amp;","&"),v,c,sm]):[
       ["This month",pct(r.mtd),cls(r.mtd),"vs S&P "+pct(r.mtd-M.spx_mtd)],
       ["Off 52-week high",pct(r.dd52),cls(r.dd52),r.offLo!=null&&r.offLo<1?"at a 52-week low":""],
       ["52-week high",money(r.hi52),"",dt(r.hi52d,1)],
@@ -467,12 +551,14 @@ S1.run();S2.run();
       ["3-month peak",r.p3?money(r.p3)+" · "+dt(r.p3d):"—"],["Worst day this month",r.worstDay!=null?pct(r.worstDay)+" · "+dt(r.worstDayD):"—"],["Down-day streak",r.downDays==null?"—":r.downDays+(r.downDays===1?" day":" days")],
       ["RSI (14)",r.rsi==null?"—":Math.round(r.rsi)+(r.rsi<30?" · oversold":r.rsi>70?" · overbought":"")],["vs 50-day avg",pct(r.v50)],["vs 200-day avg",pct(r.v200)],["Volume vs normal",r.volx==null?"—":r.volx.toFixed(2)+"×"],
       ["Market cap",r.mc==null?"—":capFmt(r.mc)],["Forward P/E",r.fpe==null?"—":r.fpe.toFixed(1)],["Dividend yield",r.dy==null?"—":r.dy.toFixed(1)+"%"],["Earnings date",r.ed?dt(r.ed,1):"—"],
+      ["30-day volatility",volFmt(r.vol30)],["1-year volatility",volFmt(r.vol1y)],["Average daily move",r.adm==null?"—":"±"+rnd(r.adm,1)+"%"],["Beta vs S&P 500",r.beta==null?"—":(r.beta<0?"−":"")+Math.abs(r.beta).toFixed(2)],
       ["Analysts",r.rec?r.rec.replace("_"," ")+(r.nA?` · ${r.nA}`:""):"—"],["Avg price target",r.tgt?money(r.tgt)+` (${pct(r.upside,0)})`:"—"],
     ].filter(x=>x[1]!=="—");
     return {key,all};
   }
 
   function whyHtml(r){
+    if(r.conf==="News")return `<ul class="hl">${(r.news||[]).map(n=>`<li><span>${esc(n[0])}</span> ${esc(n[1])}</li>`).join("")||"<li>No recent headlines found.</li>"}</ul>`;
     if(!r.theme)return `<p class="pend" style="color:var(--muted);font-size:15px">This company isn't on either falling list, so there's no write-up. It's here because it's one of the 50 largest in the S&amp;P 500.</p>`;
     if(r.conf==="Pending")return `<div class="tag">Reason pending<span>Not yet researched</span></div><p class="pend" style="color:var(--muted);font-size:14px;margin-bottom:8px">New on the list. Latest headlines:</p><ul class="hl">${(r.news||[]).map(n=>`<li><span>${esc(n[0])}</span> ${esc(n[1])}</li>`).join("")||"<li>No recent headlines found.</li>"}</ul>`;
     return `<div class="tag">${esc(r.theme)}<span>${esc(r.conf)} confidence</span></div><p>${esc(r.why)}</p>`;
@@ -486,8 +572,8 @@ S1.run();S2.run();
   }
 
   function render(r,label){
-    const {key,all}=statRows(r);
-    const pillHtml=r.curWk!=null?statusPill(r):"";
+    const kind=ctx?ctx.kind:"fall";const {key,all}=statRows(r,kind);
+    const pillHtml=r.curWk!=null?(kind==="fall"?statusPill(r):wkPill(r)):"";
     inEl.innerHTML=`
       <div class="sv-head">
         <div style="min-width:0"><div class="sv-tk">${esc(r.s)}</div><div class="sv-nm">${esc(r.name||"")}${r.sector?" · "+esc(r.sector):""}</div></div>
@@ -510,8 +596,8 @@ S1.run();S2.run();
         <div class="sv-rng" id="svRng"></div>
       </div>
       <div class="sv-cols">
-        <div class="sv-card sv-why"><h3 class="sv-h3">Why it's falling</h3>${whyHtml(r)}</div>
-        <div class="sv-card"><h3 class="sv-h3">The fall, in numbers</h3><dl class="sv-kf">${key.map(([k,v,c,s])=>`<div><dt>${k}</dt><dd class="num ${c}">${v}${s?`<small>${esc(s)}</small>`:""}</dd></div>`).join("")}</dl></div>
+        <div class="sv-card sv-why"><h3 class="sv-h3">${r.conf==="News"?"In the news":r.theme?"Why it's falling":"About"}</h3>${whyHtml(r)}</div>
+        <div class="sv-card"><h3 class="sv-h3">${kind==="gain"?"The run, in numbers":kind==="vol"?"The swings, in numbers":"The fall, in numbers"}</h3><dl class="sv-kf">${key.map(([k,v,c,s])=>`<div><dt>${k}</dt><dd class="num ${c}">${v}${s?`<small>${esc(s)}</small>`:""}</dd></div>`).join("")}</dl></div>
       </div>
       ${r.wks&&r.wks.length?`<div class="sv-card sv-wide"><h3 class="sv-h3">Weekly returns · last 10 weeks</h3><div style="max-width:720px;margin:0 auto">${bars(r.wks)}</div><div class="spark"><div class="lbl" style="max-width:720px;margin:0 auto;width:100%"><span>${M.wkdates[0]}</span><span>This week (so far)</span></div></div></div>`:""}
       <div class="sv-card sv-wide"><h3 class="sv-h3">All stats</h3><dl class="sv-all">${all.map(([k,v])=>`<div><dt>${k}</dt><dd class="num">${v}</dd></div>`).join("")}</dl></div>
@@ -584,7 +670,7 @@ S1.run();S2.run();
     $("#svTtl").innerHTML=`${esc(s)} <span>${esc(r.name&&r.name!==s?r.name:"")}</span>`;
     $("#svPos").textContent=pos>=0?`${pos+1} / ${list.length}`:"";
     $("#svPrev").disabled=pos<=0;$("#svNext").disabled=pos<0||pos>=list.length-1;
-    const label=r0?(D.includes(r0)||D.find(x=>x.s===s)?`No. ${r0.rank} falling knife`:`No. ${r0.capRank} by size`):(bigRank[s]?`No. ${bigRank[s].i} by size`:"");
+    const label=r0&&ctx?ctx.olabel(r0):r0&&D.includes(r0)?`No. ${r0.rank} falling knife`:bigRank[s]?`No. ${bigRank[s].i} by size`:"";
     render(r,label);
     if(sv.hidden){sv.hidden=false;document.documentElement.classList.add("sv-lock")}
     scroller.scrollTop=0;$("#svBack").focus({preventScroll:true});
@@ -599,7 +685,7 @@ S1.run();S2.run();
     }
     if(my!==token)return;
     hist=h;
-    if(!r0&&h.m){r=Object.assign({},h.m,{s,name:h.name,sector:h.sector,mc:bigRank[s]?bigRank[s].mc:null,asof:h.m.asof});
+    if(!r0&&h.m){ctx=null;r=Object.assign({},h.m,{s,name:h.name,sector:h.sector,mc:bigRank[s]?bigRank[s].mc:null,asof:h.m.asof});
       render(r,label);$("#svTtl").innerHTML=`${esc(s)} <span>${esc(h.name)}</span>`}
     CB=h.t.map((t,i)=>({time:t,open:h.o[i],high:h.h[i],low:h.l[i],close:h.c[i],vol:h.v?h.v[i]:null}));
     const lq=window.FKsv.lastQuote[s];
@@ -636,7 +722,7 @@ S1.run();S2.run();
     legend(b,n>1?CB[n-2].close:null);
   }
 
-  window.FKsv={cur:null,quote,lastQuote:{},open:(s,l,push=true)=>{list=l&&l.length?l:[s];openedFrom=s;open(s,push)}};
+  window.FKsv={cur:null,quote,lastQuote:{},open:(s,l,push=true,c=null)=>{list=l&&l.length?l:[s];ctx=c;openedFrom=s;open(s,push)}};
 
   $("#svBack").addEventListener("click",close);
   $("#svPrev").addEventListener("click",()=>step(-1));
@@ -652,7 +738,7 @@ S1.run();S2.run();
     else if((e.key==="ArrowLeft"||e.key==="ArrowRight")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&!e.target.closest("#svChart")){e.preventDefault();step(e.key==="ArrowLeft"?-1:1)}
     else if(e.key==="Tab"){const f=[...sv.querySelectorAll("button:not([disabled]),a[href]")].filter(x=>x.offsetParent);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
   });
-  const fromHash=()=>{const m=location.hash.match(/^#chart=([^&]+)/);if(m){const s=decodeURIComponent(m[1]).toUpperCase();if(rowFor(s)||bigRank[s]){if(cur!==s){list=list.includes(s)?list:(D.find(r=>r.s===s)?D.map(r=>r.s):BC.find(r=>r.s===s)?BC.map(r=>r.s):BIG.map(b=>b[0]));openedFrom=s;open(s,false)}return}}if(!sv.hidden){token++;destroy();cur=null;window.FKsv.cur=null;sv.hidden=true;document.documentElement.classList.remove("sv-lock")}};
+  const fromHash=()=>{const m=location.hash.match(/^#chart=([^&]+)/);if(m){const s=decodeURIComponent(m[1]).toUpperCase();if(rowFor(s)||bigRank[s]){if(cur!==s){if(!list.includes(s)){ctx=LISTS.find(L=>L.rows.some(r=>r.s===s))||null;list=ctx?ctx.rows.map(r=>r.s):BIG.map(b=>b[0])}openedFrom=s;open(s,false)}return}}if(!sv.hidden){token++;destroy();cur=null;window.FKsv.cur=null;sv.hidden=true;document.documentElement.classList.remove("sv-lock")}};
   window.addEventListener("popstate",fromHash);
   fromHash();
 })();
@@ -671,10 +757,10 @@ S1.run();S2.run();
   // per-symbol reference data
   const REF={};
   const addRef=(s,last,mtdSnap,wkPct)=>{if(REF[s])return;const base=BASE[s]||(last/(1+mtdSnap/100));REF[s]={last,base,wkb:wkPct!=null?last/(1+wkPct/100):null}};
-  [...D,...BC].forEach(r=>addRef(r.s,r.last,r.mtd,r.curWk));
+  ALL.forEach(r=>addRef(r.s,r.last,r.mtd,r.curWk));
   BIG.forEach(([s,mc,v])=>{const b=BASE[s];if(b)addRef(s,b*(1+v/100),v,null)});
   if(BASE.SPY)REF.SPY={base:BASE.SPY,last:null};
-  const rowsFor=s=>[...D.filter(r=>r.s===s),...BC.filter(r=>r.s===s)];
+  const rowsFor=s=>ALL.filter(r=>r.s===s);
   const fmtT=ts=>new Date(ts*1000).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit",timeZone:"America/New_York"});
   let lastTradeTs=0;
   function apply(s,q){
@@ -698,10 +784,10 @@ S1.run();S2.run();
       r.liveT=fmtT(t);
     });
     document.querySelectorAll(`article.card[data-s="${CSS.escape(s)}"]`).forEach(el=>{
-      const inGrid2=!!el.closest("#grid2");const S=inGrid2?S2:S1;
-      const r=(inGrid2?BC:D).find(x=>x.s===s);if(!r)return;
+      const L=listOf(el);if(!L)return;
+      const r=L.rows.find(x=>x.s===s);if(!r)return;
       const prev=el.querySelector(".pxv")?.textContent;
-      const tmp=document.createElement("div");tmp.innerHTML=card(r,el.dataset.label,S.open.has(s));
+      const tmp=document.createElement("div");tmp.innerHTML=card(r,el.dataset.label,L.kind);
       const nu=tmp.firstElementChild;el.replaceWith(nu);
       const now=nu.querySelector(".pxv");if(prev&&now&&prev!==now.textContent){now.classList.add(q.c>=parseFloat(prev.replace(/[$,]/g,""))?"flash-up":"flash-dn")}
     });
