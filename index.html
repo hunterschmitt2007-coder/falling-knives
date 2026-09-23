@@ -377,6 +377,28 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 .pmeter b{width:14px;height:6px;border-radius:3px;background:#E5E5EA}
 .pmeter b.on{background:#5B3CC4}
 .bt td.sc{font-weight:600}
+
+/* ---- monthly pattern pick ---- */
+.pk{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:stretch}
+@media (max-width:860px){.pk{grid-template-columns:1fr}}
+.pk-main{background:var(--tile);border-radius:22px;box-shadow:0 4px 24px rgba(91,60,196,.12);border:1px solid #E4DCFB;padding:24px;display:flex;flex-direction:column;gap:16px;cursor:pointer}
+.pk-st{align-self:flex-start;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:980px;background:#F4F0FF;color:#5B3CC4}
+.pk-st.final{background:#5B3CC4;color:#fff}
+.pk-id{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.pk-tk{font-size:clamp(44px,6vw,60px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.pk-nm{font-size:16px;color:var(--muted);margin-top:4px}
+.pk-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pk-kv div{background:var(--bg2);border-radius:14px;padding:10px 12px}
+.pk-kv dt{font-size:11.5px;color:var(--faint)} .pk-kv dd{margin:2px 0 0;font-size:18px;font-weight:600;letter-spacing:-.02em}
+.pk-next{font-size:13px;color:var(--muted)}
+.pk-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pk-side{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start}
+.pk-side .tr-tile{padding:16px}
+.pk-side .wide2{grid-column:1/-1}
+.pk-rule{font-size:12.5px;color:var(--faint);line-height:1.5;grid-column:1/-1;margin:2px 4px 0}
+.pklog td.k{font-weight:600}.pklog td:nth-child(2),.pklog th:nth-child(2){text-align:left}
+.tag{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:980px;background:var(--bg2);color:var(--muted)}
+.tag.live{background:var(--green-soft);color:var(--green)} .tag.lead{background:#F4F0FF;color:#5B3CC4}
 </style>
 </head><body>
 
@@ -400,16 +422,23 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 
 <div id="tabanchor"></div><div class="tabbar"><div class="tabs" id="tabs" role="tablist" aria-label="Lists"></div></div>
 
+<section class="sec" id="pick" data-tab="fall" style="padding-bottom:40px">
+  <div class="wide">
+    <div class="head" style="padding-bottom:24px"><p class="eyebrow" style="color:#5B3CC4">Section 1 · Pattern pick</p><h2>This month's pick.</h2><p id="pksub">One falling knife a month, chosen by the pick-pattern rule.</p></div>
+    <div id="pkbody"></div>
+  </div>
+</section>
+
 <section class="sec bg2" data-tab="fall">
   <div class="wide">
-    <div class="head"><p class="eyebrow">Section 1</p><h2>The story of the month.</h2><p id="storysub">What's driving this list.</p></div>
+    <div class="head"><p class="eyebrow">Section 2</p><h2>The story of the month.</h2><p id="storysub">What's driving this list.</p></div>
     <div class="stories" id="stories"></div>
   </div>
 </section>
 
 <section class="sec" id="knives" data-tab="fall">
   <div class="wide">
-    <div class="head"><p class="eyebrow">Section 2</p><h2>The 50.</h2><p id="knivessub">Ranked by loss this month. Filter by sector, reason or confidence.</p></div>
+    <div class="head"><p class="eyebrow">Section 3</p><h2>The 50.</h2><p id="knivessub">Ranked by loss this month. Filter by sector, reason or confidence.</p></div>
     <div id="bar1"></div>
     <div class="grid" id="grid"></div>
   </div>
@@ -474,7 +503,7 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
     <details class="mcard"><summary>Where the reasons come from</summary><p>Reasons come from news coverage around each stock's biggest down days this month. High confidence = a specific, reported catalyst. Medium = a sector or theme move with supporting coverage. Low = no single catalyst found.</p></details>
     <details class="mcard"><summary>Winners and volatility</summary><p>Winners = the 50 S&amp;P 500 members with the biggest gain this month, measured the same way. <b>Volatility</b> = how much a stock's daily price swings, as the annualized standard deviation of daily returns over the last 30 trading days (1-year volatility uses the past year). A stock at 60% swings roughly three times as much as one at 20%. Average daily move is the typical size of one day's move, up or down. Beta compares a stock's daily moves with the S&amp;P 500's over the past year: 1.0 moves with the market, 2.0 moves about twice as much.</p></details>
     <details class="mcard"><summary>Sell-a-put numbers</summary><p>Sell-a-put numbers use the listed put about 30 days out whose delta is nearest 0.30 (roughly a 70% chance of expiring worthless, by the options market's own pricing). Premium = mid of bid/ask, or the last trade when there's no live quote. Annualized = premium ÷ strike × 365 ÷ days to expiry (the return on cash set aside to buy the shares). IV is the at-the-money implied volatility, which we work out from the option prices. "× realized" compares it with the stock's actual 30-day volatility: above 1 means options are pricing in bigger swings than the stock has been making. IV rank shows where today's IV sits in its own range, and only appears after 20 days of history. All options data is from the close and updates once a day.</p></details>
-    <details class="mcard"><summary>Pick pattern</summary><p><b>Pick pattern</b> scores each falling knife on the 4 traits the best knives shared in a backtest of every monthly list from Sep 2021 to Aug 2026 (using the real S&amp;P 500 members each month): a tech or semiconductor company; falling in a group sell-off (its sector's median stock or the S&amp;P 500 down 3%+ this month); moving with its sector rather than blowing up on its own news (within 12 points of the sector median); and already 30%+ below its 52-week high. Over the next 12 months, knives scoring 4 of 4 averaged +62% (79% beat the S&amp;P 500); 3 of 4 averaged +16%; 0–1 averaged about +3%. The tech result partly reflects the AI boom in those years and may not repeat, and in 2024–25 the higher scores' edge came mostly from a few big winners. A higher score means better odds, not a guaranteed pick.</p></details><details class="mcard"><summary>Bottoming signs</summary><p>Bottoming signs are four simple checks: back above the 50-day average after being below it in the last two weeks; RSI (14-day momentum) up 10+ points from an oversold reading under 30 in the last two weeks; the first up week after two or more down weeks; and a higher low (the last two weeks' low is above a 3-month low set 2–6 weeks ago). Two or more = "Rebounding". They are not predictions and fail often.</p></details>
+    <details class="mcard"><summary>Pick pattern</summary><p><b>Pick pattern</b> scores each falling knife on the 4 traits the best knives shared in a backtest of every monthly list from Sep 2021 to Aug 2026 (using the real S&amp;P 500 members each month): a tech or semiconductor company; falling in a group sell-off (its sector's median stock or the S&amp;P 500 down 3%+ this month); moving with its sector rather than blowing up on its own news (within 12 points of the sector median); and already 30%+ below its 52-week high. Over the next 12 months, knives scoring 4 of 4 averaged +56% (75% beat the S&amp;P 500); 3 of 4 averaged +16%; 0–1 averaged about +3%. The tech result partly reflects the AI boom in those years and may not repeat, and in 2024–25 the higher scores' edge came mostly from a few big winners. <b>Pattern pick</b>: once a month the site takes the single knife with the highest score (ties go to the biggest drop this month). It locks at the close on the month's last trading day. Months before the site existed are filled in from the backtest; later months are tracked live. A higher score means better odds, not a guaranteed pick.</p></details><details class="mcard"><summary>Bottoming signs</summary><p>Bottoming signs are four simple checks: back above the 50-day average after being below it in the last two weeks; RSI (14-day momentum) up 10+ points from an oversold reading under 30 in the last two weeks; the first up week after two or more down weeks; and a higher low (the last two weeks' low is above a 3-month low set 2–6 weeks ago). Two or more = "Rebounding". They are not predictions and fail often.</p></details>
     <details class="mcard"><summary>Track record</summary><p>Track record ranks every S&amp;P 500 member by its return in each calendar month and follows the 50 worst (and 50 best) from that month's last close. Months marked Live use the list exactly as this site published it. Earlier months are rebuilt from price history using today's members, so companies that were later dropped from the index are missing, which makes the results look somewhat better than they really were.</p></details>
     <details class="mcard"><summary>Blue chips</summary><p>Blue chips = the 50 largest S&amp;P 500 companies by market cap (one share class per company). Analyst upside = average price target vs. last close.</p></details>
     <details class="mcard"><summary>Data and live prices</summary><p>Yahoo Finance daily closes (split-adjusted) for all 503 S&amp;P 500 members, plus Yahoo quote data for valuation and analyst targets. Rankings and reasons refresh every weekday after the close (about 5:30pm ET). Prices on the cards, the blue-chip tiles and the S&amp;P figure update live from Finnhub during market hours, roughly every minute per stock (faster for the stocks on your screen); % this month, % off the high and this week's bar recalculate from the live price. Confirm prices with your broker before trading. For information only, not investment advice.</p></details>
@@ -501,7 +530,7 @@ const TR=window.FK.TR||[];
 ALL.forEach(r=>{r.patScore=r.pat&&r.mtd<0?r.pat.score:null});
 const PATS=[["t","Tech or semiconductor","Information Technology, chip makers or interactive media"],["c","Group sell-off","its sector's median stock, or the S&P 500, is down 3%+ this month"],["n","Moving with its sector","within 12 points of its sector's median move, so not a company-specific blow-up"],["d","30%+ below its high","already well off its 52-week high"]];
 // 12-month results for every falling knife bought Sep 2021 – Aug 2025, by pattern score
-const PATBT=[[4,47,61.9,52.2,79],[3,311,15.5,6.2,42],[2,834,10.8,4.7,39],[1,977,3.1,-1.1,31],[0,281,1.9,1.2,35]];
+const PATBT=[[4,52,55.7,41.9,75],[3,309,16.2,9.2,44],[2,835,10.7,4.9,39],[1,987,3.1,-1.8,30],[0,267,1.2,0.3,34]];
 const patOn=r=>r.pat&&r.mtd<0;
 const WKEY="fk_watch";let WATCH=[];try{WATCH=JSON.parse(localStorage.getItem(WKEY)||"[]").filter(x=>typeof x==="string")}catch(e){}
 const saveW=()=>{try{localStorage.setItem(WKEY,JSON.stringify(WATCH))}catch(e){}};
@@ -714,6 +743,50 @@ $("#heat").addEventListener("click",e=>{if(e.target.closest("[data-star]"))retur
 LISTS.forEach(L=>L.S&&L.S.run());
 if(!VB.length){const x=document.querySelector(".subnav .vbl");if(x)x.hidden=true}
 
+/* ===== MONTHLY PATTERN PICK ===== */
+function renderPick(){
+  const PK=window.FK.PK,el=$("#pkbody");
+  if(!PK||!PK.cur){$("#pick").classList.add("tabhide-empty");return}
+  const c=PK.cur,row=D.find(r=>r.s===c.s),t=PK.tot||{};
+  const [y,m]=c.m.split("-").map(Number);const mName=new Date(Date.UTC(y,m-1,15)).toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
+  let ld=new Date(Date.UTC(y,m,0));while(ld.getUTCDay()===0||ld.getUTCDay()===6)ld.setUTCDate(ld.getUTCDate()-1);
+  const ldTxt=ld.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
+  const st=c.final?`<span class="pk-st final">Final pick for ${mName} · locked at the ${dt(c.asof)} close</span>`:`<span class="pk-st">Leading as of ${dt(c.asof)} · locks at the close on the last trading day (${ldTxt})</span>`;
+  const live=row&&row.liveT;
+  $("#pksub").textContent=c.final?`The rule's pick for ${mName}. The next pick starts building on the first trading day of next month.`:`The rule's current leader for ${mName}. It can change every day until the month's last close.`;
+  const log=PK.log||[];
+  const rows=log.map(v=>{const [yy,mm]=v.m.split("-").map(Number);const mn=new Date(Date.UTC(yy,mm-1,15)).toLocaleDateString("en-US",{month:"short",year:"numeric",timeZone:"UTC"});
+    const tag=!v.final?'<span class="tag lead">Leading</span>':v.src==="live"?'<span class="tag live">Live</span>':'<span class="tag">Backtest</span>';
+    return `<tr><td class="k">${mn}</td><td><b>${esc(v.s)}</b> <span style="color:var(--faint)">${esc(v.name||"")}</span></td><td>${v.score}/4</td><td>${money(v.px)}</td><td>${v.final&&v.now!=null?money(v.now):"—"}</td><td class="${v.final?cls(v.ret):""}">${v.final?pct(v.ret):"in progress"}</td><td class="${v.final?cls(v.spyRet):""}">${v.final?pct(v.spyRet):"—"}</td><td>${tag}</td></tr>`});
+  const pl=t.cost?((t.val/t.cost-1)*100):null,sl=t.cost?((t.spy/t.cost-1)*100):null;
+  el.innerHTML=`<div class="pk">
+    <article class="pk-main" data-s="${esc(c.s)}" tabindex="0" aria-label="Open ${esc(c.s)} chart">
+      ${st}
+      <div class="pk-id"><div><div class="pk-tk">${esc(c.s)}</div><div class="pk-nm">${esc(c.name||"")}</div></div><div style="text-align:right"><div class="big num neg" style="font-size:34px">${pct(c.drop)}</div><div style="font-size:12px;color:var(--faint)">in ${mName}</div></div></div>
+      <div><div class="cs-h" style="margin-bottom:8px">Pick pattern<span class="pmeter" aria-label="${c.score} of 4">${[0,1,2,3].map(i=>`<b class="${i<c.score?"on":""}"></b>`).join("")}</span></div>
+        <div class="patrow">${PATS.map(([k,l])=>`<span class="pchip ${c.chk[k]?"on":""}"><i>${c.chk[k]?"✓":"–"}</i>${l}</span>`).join("")}</div></div>
+      <dl class="pk-kv"><div><dt>${c.final?"Pick price (close)":"Price at last close"}</dt><dd class="num">${money(c.px)}</dd></div><div><dt>${live?"Live price":"Latest price"}</dt><dd class="num" id="pkPx">${money(row?row.last:c.px)}</dd></div><div><dt>Score</dt><dd class="num">${c.score} of 4</dd></div></dl>
+      ${c.next&&c.next.length?`<div class="pk-next">Next in line: ${c.next.map(([s2,sc,md])=>`<b>${esc(s2)}</b> (${sc}/4, ${pct(md)})`).join(" · ")}</div>`:""}
+      <div class="pk-act"><button type="button" class="btn" data-open="${esc(c.s)}">Chart &amp; full stats</button>${starBtn(c.s)}</div>
+    </article>
+    <div class="pk-side">
+      <div class="tr-tile wide2"><b class="num ${cls(pl)}">${t.cost?money(t.val):"—"}</b><span>What 1 share of every pick since ${log.length?new Date(Date.UTC(+log.at(-1).m.slice(0,4),+log.at(-1).m.slice(5)-1,15)).toLocaleDateString("en-US",{month:"short",year:"numeric",timeZone:"UTC"}):"the start"} is worth now. You'd have paid ${money(t.cost)} (${pct(pl,0)}). The same money in the S&amp;P 500: ${money(t.spy)} (${pct(sl,0)}).</span></div>
+      <div class="tr-tile"><b class="num">${t.up||0} of ${t.n||0}</b><span>picks are up</span></div>
+      <div class="tr-tile"><b class="num">${t.beat||0} of ${t.n||0}</b><span>beat the S&amp;P 500 over the same span</span></div>
+      <p class="pk-rule">Rule: the knife with the highest pick-pattern score; ties go to the biggest drop this month. Picks before this site existed come from the backtest (built on that same data, so treat them with some skepticism). Live picks so far: ${t.live||0}. Not investment advice.</p>
+    </div>
+  </div>
+  <div class="sv-card sv-wide" style="margin-top:20px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px"><h3 class="sv-h3" style="margin:0">Pick log · 1 share each</h3><span style="font-size:12.5px;color:var(--faint)">Prices adjusted for splits</span></div>
+    <div class="tscroll"><table class="ptab pklog"><thead><tr><th>Month</th><th style="text-align:left">Pick</th><th>Score</th><th>Bought at</th><th>Worth now</th><th>Return</th><th>S&amp;P same span</th><th></th></tr></thead><tbody id="pkrows">${rows.slice(0,12).join("")}</tbody></table></div>
+    ${rows.length>12?`<div style="text-align:center;margin-top:12px"><button type="button" class="showall" id="pkall" style="margin:0">Show all ${rows.length} months</button></div>`:""}
+  </div>`;
+  const allBtn=$("#pkall");if(allBtn)allBtn.addEventListener("click",()=>{const open=allBtn.dataset.open==="1";$("#pkrows").innerHTML=(open?rows.slice(0,12):rows).join("");allBtn.dataset.open=open?"0":"1";allBtn.textContent=open?`Show all ${rows.length} months`:"Show fewer"});
+  const main=el.querySelector(".pk-main");
+  main.addEventListener("click",e=>{const st2=e.target.closest("[data-star]");if(st2){toggleWatch(st2.dataset.star);return}window.FKsv.open(c.s,D.map(r=>r.s),true,LISTS[0])});
+  main.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target===main)window.FKsv.open(c.s,D.map(r=>r.s),true,LISTS[0])});
+}
+renderPick();
+
 /* ===== MY LIST ===== */
 function syncStars(){document.querySelectorAll("[data-star]").forEach(b=>{const s=b.dataset.star;if(!s)return;const on=WATCH.includes(s);b.setAttribute("aria-pressed",on);b.textContent=on?"★":"☆";b.title=on?"Remove from My list":"Add to My list";b.setAttribute("aria-label",(on?"Remove ":"Add ")+s+(on?" from":" to")+" My list")});const c=document.getElementById("tabn-watch");if(c)c.textContent=WATCH.length?WATCH.length:""}
 function toggleWatch(s){const i=WATCH.indexOf(s);i>=0?WATCH.splice(i,1):WATCH.unshift(s);saveW();syncStars();renderWatch()}
@@ -844,7 +917,7 @@ if(WATCH.length&&curTab!=="watch")renderWatch();
       <div class="tscroll"><table class="ptab bt"><thead><tr><th>Score</th><th>Knives</th><th>Average</th><th>Typical (median)</th><th>Beat S&amp;P</th></tr></thead><tbody>
       ${PATBT.map(([sc,n,a,m,b])=>`<tr class="${sc===p.score?"cur30":""}"><td class="sc">${sc}/4</td><td>${n}</td><td class="${cls(a)}">${pct(a)}</td><td class="${cls(m)}">${pct(m)}</td><td>${b}%</td></tr>`).join("")}
       </tbody></table></div>
-      <p class="sv-rng" style="margin-top:8px">Every monthly falling knife bought Sep 2021 – Aug 2025, using the actual S&amp;P 500 members each month. In 2024–25 the 3+ scores still averaged more, but the typical pick barely beat the rest, because a few huge winners did most of the work. Treat it as better odds, not a sure thing.</p></div>`;
+      <p class="sv-rng" style="margin-top:8px">Every monthly falling knife bought Sep 2021 – Aug 2025, using the actual S&amp;P 500 members each month. In 2024–25 the 3+ scores still averaged more (+28% vs +10% for the rest), but the typical pick only did slightly better, because a few huge winners did most of the work. Treat it as better odds, not a sure thing.</p></div>`;
   }
   function sigCard(r){
     if(!r.sig)return"";const g=r.sig;
@@ -1108,6 +1181,7 @@ if(WATCH.length&&curTab!=="watch")renderWatch();
     const mtd=(q.c/base-1)*100;
     if(s==="SPY"){const el=document.getElementById("spxv");if(el){el.textContent=pct(mtd,1);el.className="num "+cls(mtd)}const l=document.getElementById("spxl");if(l)l.textContent="S&P 500 this month · live";return}
     if(window.FKsv){window.FKsv.lastQuote[s]={q,mtd};window.FKsv.quote(s,q,mtd)}
+    {const PK=window.FK.PK,pe=document.getElementById("pkPx");if(pe&&PK&&PK.cur&&PK.cur.s===s){pe.textContent=money(q.c);const dtl=pe.previousElementSibling;if(dtl)dtl.textContent="Live price"}}
     rowsFor(s).forEach(r=>{
       r.last=q.c;r.prev=q.pc;r.day=q.dp;r.mtd=mtd;
       r.dd52=q.c>=r.hi52?0:(q.c/r.hi52-1)*100;

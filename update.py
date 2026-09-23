@@ -451,6 +451,11 @@ def build_digest(meta, D, BC, G, V, prev_syms, asof):
     url = site_url()
     fmt = lambda v: ("+" if v > 0 else "") + f"{v:.1f}%"
     L = [f"## {asof.strftime('%A, %b %-d')} — S&P 500 {fmt(meta['spx_mtd'])} in {meta['monthName']}", ""]
+    pk = (meta.get("pick") or {})
+    if pk:
+        tag = f"**FINAL PICK for {meta['monthName']}** (buy after the close)" if pk.get("final") else "**This month's pattern pick** (leading as of today; locks at the month's last close)"
+        L += [tag, f"- **{pk['s']}** {pk['name']} — score {pk['score']}/4, {fmt(pk['drop'])} this month, ${pk['px']:.2f}"
+              + (" · next: " + ", ".join(f"{a} ({b}/4)" for a, b, c in pk.get("next", [])) if pk.get("next") else ""), ""]
     new = [r for r in D if r["s"] not in prev_syms] if prev_syms else []
     if new:
         L.append("**New falling knives today**")
@@ -489,6 +494,129 @@ def build_digest(meta, D, BC, G, V, prev_syms, asof):
     if url: L.append(f"[Open the site]({url})")
     L.append("\n<sub>Not investment advice. Options prices are from the close and can be stale; check your broker.</sub>")
     return "\n".join(L)
+
+
+def _easter(y):
+    a = y % 19; b = y // 100; c = y % 100; d = b // 4; e = b % 4; f = (b + 8) // 25; g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30; i = c // 4; k = c % 4; l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451; mo = (h + l - 7 * m + 114) // 31; da = ((h + l - 7 * m + 114) % 31) + 1
+    return dt.date(y, mo, da)
+
+
+def nyse_holidays(y):
+    def obs(d):  # weekend -> observed weekday
+        return d - dt.timedelta(days=1) if d.weekday() == 5 else d + dt.timedelta(days=1) if d.weekday() == 6 else d
+    def nth(month, weekday, n):
+        d = dt.date(y, month, 1); d += dt.timedelta(days=(weekday - d.weekday()) % 7); return d + dt.timedelta(weeks=n - 1)
+    def last(month, weekday):
+        d = dt.date(y + (month == 12), month % 12 + 1, 1) - dt.timedelta(days=1); return d - dt.timedelta(days=(d.weekday() - weekday) % 7)
+    hs = {obs(dt.date(y, 1, 1)), nth(1, 0, 3), nth(2, 0, 3), _easter(y) - dt.timedelta(days=2), last(5, 0),
+          obs(dt.date(y, 6, 19)), obs(dt.date(y, 7, 4)), nth(9, 0, 1), nth(11, 3, 4), obs(dt.date(y, 12, 25))}
+    return hs
+
+
+def is_trading_day(d):
+    return d.weekday() < 5 and d not in nyse_holidays(d.year)
+
+
+def is_last_trading_day(d):
+    n = d + dt.timedelta(days=1)
+    while not is_trading_day(n):
+        n += dt.timedelta(days=1)
+    return n.month != d.month
+
+
+def update_pick_log(D, last_date):
+    """This month's pattern pick: highest pick-pattern score, ties -> biggest drop. Locks at the last close of the month."""
+    log = load_json("picklog.json", {})
+    key = last_date.strftime("%Y-%m")
+    for k, v in log.items():
+        if k < key and not v.get("final"):
+            v["final"] = True
+    cands = sorted([r for r in D if r.get("pat")], key=lambda r: (-r["pat"]["score"], r["mtd"]))
+    if not cands:
+        return log, None
+    lead = cands[0]
+    try:
+        from zoneinfo import ZoneInfo
+        now_ny = dt.datetime.now(ZoneInfo("America/New_York"))
+    except Exception:  # noqa
+        now_ny = dt.datetime.utcnow() - dt.timedelta(hours=4)
+    after_close = last_date < now_ny.date() or now_ny.hour * 60 + now_ny.minute >= 16 * 60 + 5
+    final = is_last_trading_day(last_date) and after_close
+    prev = log.get(key)
+    if not (prev and prev.get("final") and prev.get("asof", "") >= last_date.isoformat() and prev.get("src") == "live") or final:
+        log[key] = {"s": lead["s"], "name": lead["name"], "score": lead["pat"]["score"], "drop": lead["mtd"], "px": lead["last"],
+                    "chk": {k: lead["pat"][k] for k in "tcnd"}, "src": "live", "yf": lead["s"], "asof": last_date.isoformat(),
+                    "final": final, "next": [[r["s"], r["pat"]["score"], r["mtd"]] for r in cands[1:3]]}
+    write_json("picklog.json", log)
+    return log, key
+
+
+def pick_performance(log, spy_frame):
+    """Split-adjusted return of each pick (1 share, bought at that month's pick close) and SPY over the same span."""
+    syms = sorted({v.get("yf") or v["s"] for v in log.values()} | {"SPY"})
+    try:
+        raw = yf.download(syms, period="6y", interval="1d", auto_adjust=False, group_by="ticker", threads=True, progress=False)
+    except Exception as e:  # noqa
+        print("pick download failed", e, file=sys.stderr); raw = None
+    def series(sym):
+        try:
+            sub = raw[sym] if len(syms) > 1 else raw
+            return sub["Close"].dropna()
+        except Exception:
+            return None
+    spy = series("SPY")
+    if (spy is None or not len(spy)) and spy_frame is not None:
+        spy = spy_frame["Close"].dropna()
+    out, cost, val, spyv, up, beat = [], 0.0, 0.0, 0.0, 0, 0
+    for k in sorted(log):
+        v = dict(log[k]); ser = series(v.get("yf") or v["s"])
+        if v.get("asof"):
+            d = pd.Timestamp(v["asof"])
+        else:
+            y, m = map(int, k.split("-")); d = pd.Timestamp(dt.date(y + (m == 12), m % 12 + 1, 1)) - pd.Timedelta(days=1)
+        ret = sret = None
+        if ser is not None and len(ser):
+            b = ser[ser.index <= d]
+            if len(b): ret = float(ser.iloc[-1] / b.iloc[-1] - 1)
+        if spy is not None:
+            b = spy[spy.index <= d]
+            if len(b): sret = float(spy.iloc[-1] / b.iloc[-1] - 1)
+        v["ret"] = r2(ret * 100) if ret is not None else None
+        v["spyRet"] = r2(sret * 100) if sret is not None else None
+        v["now"] = r2(v["px"] * (1 + ret)) if ret is not None else None
+        v["m"] = k
+        if ret is not None and v.get("final"):
+            cost += v["px"]; val += v["px"] * (1 + ret); spyv += v["px"] * (1 + (sret or 0))
+            up += ret > 0; beat += sret is not None and ret > sret
+        out.append(v)
+    n = sum(1 for v in out if v.get("final") and v.get("ret") is not None)
+    return {"log": out[::-1], "tot": {"n": n, "cost": r2(cost), "val": r2(val), "spy": r2(spyv), "up": up, "beat": beat,
+            "live": sum(1 for v in out if v.get("src") == "live" and v.get("final"))}}
+
+
+def post_final_issue(entry, month_name):
+    tok, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    title = f"FINAL pick for {month_name}: {entry['s']} ({entry['name']}) — score {entry['score']}/4"
+    names = {"t": "tech or semiconductor", "c": "group sell-off", "n": "moving with its sector", "d": "30%+ below its high"}
+    body = (f"**{entry['s']}** closed at **${entry['px']:.2f}**, down {abs(entry['drop']):.1f}% in {month_name}.\n\n"
+            f"Pick-pattern score **{entry['score']}/4**: " + ", ".join(("✓ " if entry['chk'][k] else "✗ ") + v for k, v in names.items()) + "\n\n"
+            + ("Next in line: " + ", ".join(f"{a} ({b}/4, {c:+.1f}%)" for a, b, c in entry.get("next", [])) + "\n\n" if entry.get("next") else "")
+            + (f"[Open the site]({site_url()})\n\n" if site_url() else "")
+            + "<sub>Rule-based pick from a backtest, not investment advice. Check the live price and news before buying.</sub>")
+    if not tok or not repo:
+        print("final pick (not posted):", title); return
+    h = {"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"}
+    try:
+        api = f"https://api.github.com/repos/{repo}"
+        existing = requests.get(f"{api}/issues", headers=h, params={"state": "all", "per_page": 50}, timeout=20).json()
+        if any(i.get("title", "").startswith(f"FINAL pick for {month_name}:") for i in existing):
+            return
+        r = requests.post(f"{api}/issues", headers=h, json={"title": title, "body": body}, timeout=20)
+        print("final pick issue", r.status_code)
+    except Exception as e:  # noqa
+        print("final pick issue failed", e, file=sys.stderr)
 
 
 def auto_stories(D, month_name):
@@ -638,7 +766,15 @@ def main():
         o["wc"] = [[d.strftime("%Y-%m-%d"), r2(v)] for d, v in wk.items()]
         ALLS[s] = o
     write_json("all.json", {"asof": last_date.isoformat(), "S": ALLS, "BASE": {s: M[s]["base"] for s in M}})
-    payload = {"D": D, "BC": BC, "BIG": BIG, "M": meta, "BASE": BASE, "G": G, "V": V, "VB": VB, "TR": TR}
+    plog, pkey = update_pick_log(D, last_date)
+    PK = pick_performance(plog, frames.get("SPY"))
+    PK["cur"] = dict(plog[pkey], m=pkey) if pkey else None
+    meta["pick"] = PK["cur"]
+    finals = [k for k, v in plog.items() if v.get("final") and v.get("src") == "live"]
+    if finals:
+        fk = max(finals); fy, fm = map(int, fk.split("-"))
+        post_final_issue(plog[fk], f"{calendar.month_name[fm]} {fy}")
+    payload = {"D": D, "BC": BC, "BIG": BIG, "M": meta, "BASE": BASE, "G": G, "V": V, "VB": VB, "TR": TR, "PK": PK}
     with open("data.js", "w") as f:
         f.write("window.FK=" + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n")
     try:
