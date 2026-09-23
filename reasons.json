@@ -1,0 +1,386 @@
+{
+ "NFLX": [
+  "Competition",
+  "Medium",
+  "Fell 5.4% on Sep 4 in the tech sell-off and 7% the week of Sep 18 as Wells Fargo flagged engagement risk from YouTube; HSBC downgraded it on Sep 22."
+ ],
+ "BAC": [
+  "Bank outlook",
+  "High",
+  "Sep 14: fell about 5% (its worst day since April 2025) after CEO Brian Moynihan guided Q3 trading revenue roughly flat and flagged weaker investment-banking fees, dragging big banks. The Fed hiked on Sep 16, and Sep 22's Muse-driven AI fears hit banks again."
+ ],
+ "RTX": [
+  "Geopolitics",
+  "Low",
+  "Slid 5% the week of Sep 4 and kept drifting; defense names slipped again Sep 22 on a report the Strait of Hormuz is reopening and US–Iran diplomacy progress. Its record $289B backlog is unchanged."
+ ],
+ "GS": [
+  "Bank outlook",
+  "Medium",
+  "Big-bank sell-off after BofA's Sep 14 warning on flat trading and weaker IB fees; fell 8.5% the week ending Sep 18 around the Fed's Sep 16 rate hike."
+ ],
+ "HD": [
+  "Housing",
+  "Medium",
+  "Home Depot's CFO warned the U.S. housing market is \"frozen\" with turnover at historic lows; rising rates (Fed hike Sep 16) weigh on big-ticket DIY. Six straight down weeks before this week's bounce; near a 52-week low."
+ ],
+ "MS": [
+  "Bank outlook",
+  "Medium",
+  "Fell with big banks after BofA's Sep 14 trading/IB outlook; −2.9% Sep 22 as Muse and AI-advisor fears hit wealth managers."
+ ],
+ "MA": [
+  "AI agent (Muse)",
+  "Low",
+  "Payments names slipped with financials on Sep 22 AI-agent fears and stablecoin competition headlines (SoFi settling card payments on stablecoin). Only 7% off its August high."
+ ],
+ "GE": [
+  "Sector drag",
+  "Low",
+  "Aerospace pullback: fell 3.3% on Sep 15; commentary around a lower 2026 departures forecast. Six straight down weeks before bouncing 1.6% this week."
+ ],
+ "COST": [
+  "Valuation",
+  "Low",
+  "Slow drift lower into fiscal Q4 earnings (Sep 24) at ~40× forward earnings; no single catalyst."
+ ],
+ "V": [
+  "AI agent (Muse)",
+  "Low",
+  "Slipped with financials on Sep 22 AI-agent fears; merchants challenging the card-fee settlement. Only ~6% off its August high."
+ ],
+ "JPM": [
+  "AI agent (Muse)",
+  "Medium",
+  "Sep 22: fell ~3.4% as Meta's Muse agent (moves savings to higher-yield accounts automatically) and a Vanguard-backed AI advisor hit banks; also fell with peers after BofA's Sep 14 outlook."
+ ],
+ "UNH": [
+  "Sector drag",
+  "Low",
+  "Medicare Advantage margin concerns linger ahead of Oct 13 earnings; fell 4.6% the week of Sep 11 around its ex-dividend date."
+ ],
+ "WFC": [
+  "AI agent (Muse)",
+  "Medium",
+  "Fell 3.9% Sep 22 as Muse added to AI-disruption fears in banks; also hit by BofA's Sep 14 outlook and the Fed hike."
+ ],
+ "CSCO": [
+  "Analyst downgrade",
+  "High",
+  "Sep 22: fell 4.5% after Piper Sandler cut its price target on growth concerns, while the rest of tech rose."
+ ],
+ "PANW": [
+  "Volatility",
+  "Low",
+  "Fell 9.3% on Sep 2 in the early-September software sell-off but has since bounced ~10%; roughly flat for the month."
+ ],
+ "AMZN": [
+  "Minor pullback",
+  "Low",
+  "Small pullback; in the news for blocking rival AI shopping agents (e.g. Muse) on its site. Down ~10% from its Aug 3 high."
+ ],
+ "MSFT": [
+  "Minor pullback",
+  "Low",
+  "Modest giveback after a big summer run (+33% over 3 months); no specific catalyst."
+ ],
+ "CVX": [
+  "Commodity",
+  "Medium",
+  "Oil pulled back from above $100 on US–Iran diplomacy and a Hormuz reopening report; Goldman trimmed its target to $228. Fell from a Sep 15 record high."
+ ],
+ "AVGO": [
+  "Sector drag",
+  "Low",
+  "Chip volatility (fell 4.8% Sep 14 when AI leaders urged a development slowdown); bouncing +1.9% this week."
+ ],
+ "XOM": [
+  "Commodity",
+  "Medium",
+  "Oil fell mid-month on diplomacy optimism; down ~6% from a Sep 15 peak."
+ ],
+ "PLTR": [
+  "Minor pullback",
+  "Low",
+  "Essentially flat after a 40% August surge; bouncing this week."
+ ],
+ "BRK-B": [
+  "Flat",
+  "Low",
+  "Essentially unchanged (−0.1%)."
+ ],
+ "KO": [
+  "Flat",
+  "Low",
+  "Essentially unchanged (−0.1%); Teamsters strike at some Coca-Cola facilities in the news."
+ ],
+ "CHTR": [
+  "Competition",
+  "High",
+  "Broadband subscriber bleed (≈292K internet subs lost in H1) to T-Mobile fixed wireless, fiber and Starlink. Fell 8% on Sep 9 after Comcast's CFO called broadband pricing \"irrational\"; Wolfe downgrade and Cox-merger debt worries added on. At a new 52-week low."
+ ],
+ "CASY": [
+  "Earnings",
+  "High",
+  "Fiscal Q1 (Sep 8) beat on profit, but inside same-store sales slowed to 3.2% (from 4%+) and the market doubts fuel-margin gains will last. Guidance left unchanged. Dropped 14% on Sep 9, worst in the S&P that day."
+ ],
+ "COO": [
+  "Earnings",
+  "High",
+  "Q3 miss and a Q4 EPS guide of $1.05–1.09 vs. $1.19 expected; scrapped the CooperSurgical sale that bulls were counting on; U.S. contact-lens channel destocking. Fell 15% on Sep 10. An activist is now pushing for a CEO change."
+ ],
+ "FICO": [
+  "Regulation",
+  "High",
+  "Sep 4: FHFA said Fannie Mae and Freddie Mac will accept the far cheaper VantageScore in place of FICO, threatening FICO's mortgage-score pricing power. Fell 17% that day; new 52-week low today."
+ ],
+ "AXON": [
+  "Financing",
+  "High",
+  "Sold off 10% on Sep 15 after announcing a ~$1B zero-coupon convertible note offering, on top of worries about Q2 gross-margin slippage (62.9%, down 40 bp) from memory costs."
+ ],
+ "ADBE": [
+  "AI disruption",
+  "High",
+  "Sep 4: surprise internal CEO succession announced ahead of earnings plus a soft Q4 outlook; fell 7% and reignited AI-disruption fears across creative and enterprise software."
+ ],
+ "INTU": [
+  "AI disruption",
+  "Medium",
+  "Investor day in late August reset the growth outlook lower; caught in repeated software sell-offs on AI-disruption fears (e.g. Sep 19 with CrowdStrike, HubSpot, Okta)."
+ ],
+ "BKNG": [
+  "AI agent (Muse)",
+  "Medium",
+  "Fell 6.7% Sep 8 on EU Digital Markets Act search-visibility worries and competition, then a blocked eTraveli deal; Sep 22 Meta's Muse AI agent triggered a travel-booking sell-off. Six straight down weeks."
+ ],
+ "DASH": [
+  "Competition",
+  "Low",
+  "Slid with consumer-internet names in early September on delivery-competition and profitability worries (−5.3% Sep 8). No single company catalyst found; the $131M NYC pay settlement on Sep 22 was taken in stride."
+ ],
+ "CMCSA": [
+  "Competition",
+  "High",
+  "Sep 9: fell 6.6% after the CFO described broadband pricing as \"irrational\" — read as a price war with fixed-wireless and fiber rivals while broadband subs keep shrinking."
+ ],
+ "EFX": [
+  "Regulation",
+  "High",
+  "Fell 6.4% on Sep 4 alongside FICO after the FHFA credit-score decision, adding uncertainty to mortgage credit-reporting economics."
+ ],
+ "ADSK": [
+  "AI disruption",
+  "High",
+  "Dropped 8.3% on Sep 4 in the software sell-off triggered by Adobe's CEO news, already under pressure after late-August guidance disappointed."
+ ],
+ "SYK": [
+  "Operations",
+  "High",
+  "Sep 8: fell 8.8% after the CFO said supply disruptions in the peripheral-vascular business will continue into Q4 instead of clearing by the end of Q3."
+ ],
+ "ROP": [
+  "AI disruption",
+  "Low",
+  "Vertical-software exposure caught in the broad AI-disruption de-rating; a steady six-day losing streak with no single catalyst found."
+ ],
+ "FIS": [
+  "Sector drag",
+  "Low",
+  "Bank-tech and payments names keep de-rating; Piper Sandler initiated at Neutral ($42) on Sep 11; the Sep 22 \"consumer inertia\" sell-off hit financials. Trading at a 52-week low."
+ ],
+ "CMG": [
+  "Consumer slowdown",
+  "Medium",
+  "Fell 5.9% on Sep 15 on a salmonella headline and profit-taking; weak August restaurant traffic and a Baird downgrade weigh on the group."
+ ],
+ "GIS": [
+  "Consumer slowdown",
+  "Medium",
+  "Cost inflation and soft volumes heading into fiscal Q1 earnings (Sep 23); sentiment on packaged food remains poor."
+ ],
+ "OMC": [
+  "Client loss",
+  "Medium",
+  "Lost the PepsiCo media account (reported Sep 2–3), falling ~5%; ongoing worry that AI erodes agency economics."
+ ],
+ "LULU": [
+  "Earnings",
+  "High",
+  "Sep 4: plunged 17% after a second straight full-year guidance cut and weak Q2 sales as a new CEO starts. Hit an 8-year low mid-month."
+ ],
+ "FISV": [
+  "Sector drag",
+  "Low",
+  "Continued de-rating after its 2025 collapse; printed another 52-week low on Sep 22, the same day its former CFO was named CFO of Pentair. Seven straight down days."
+ ],
+ "BRO": [
+  "Insurance pricing",
+  "Medium",
+  "Softening property-insurance pricing is squeezing broker organic growth; the group also took read-through hits from Aon's USI deal and the Sep 22 Muse AI-agent sell-off."
+ ],
+ "ALB": [
+  "Commodity",
+  "Medium",
+  "China lithium prices sliding again and EV-demand doubts; Mizuho cut its target to $140 on Sep 18. Bounced 5% this week."
+ ],
+ "BX": [
+  "Private credit",
+  "Medium",
+  "Alt-manager sell-off continues on private-credit stress, redemption caps and fund-exit worries; fell 4.6% on Sep 1. Five straight down weeks."
+ ],
+ "SLB": [
+  "Commodity",
+  "Medium",
+  "Pulled back from an Aug 31 record as oil eased mid-month on US–Iran diplomacy and a report that the Strait of Hormuz is reopening; profit-taking after a 54% one-year run."
+ ],
+ "DPZ": [
+  "Consumer slowdown",
+  "Medium",
+  "Baird downgraded Domino's (and Chipotle) as restaurant traffic weakened; fell 4.2% on Sep 9."
+ ],
+ "ARES": [
+  "Private credit",
+  "Medium",
+  "Same private-credit and alt-manager de-rating hitting Blackstone and KKR."
+ ],
+ "CPRT": [
+  "Earnings",
+  "High",
+  "Fiscal Q4 (Sep 10) EPS of $0.35 missed the $0.38 estimate, it launched a $1.9B tender for ACV Auctions, and HSBC downgraded it."
+ ],
+ "RCL": [
+  "Fuel costs",
+  "High",
+  "High oil and fuel costs pressure cruise margins; fell 6% today (Sep 22) on reports it is near a deal for a majority stake in Sandals Resorts. Six straight down weeks, at a 52-week low."
+ ],
+ "AJG": [
+  "Insurance pricing",
+  "Medium",
+  "Broker group weakness on softening pricing, Aon/USI read-through and the Sep 22 Muse sell-off."
+ ],
+ "LDOS": [
+  "Sector drag",
+  "Low",
+  "Government-services names drifting lower; no single September catalyst found. Five straight down weeks."
+ ],
+ "GEN": [
+  "AI agent (Muse)",
+  "Low",
+  "Fell 6.4% today (Sep 22) with consumer-subscription names in the Muse sell-off; no company-specific news found. Only 6 trading days off its high."
+ ],
+ "NCLH": [
+  "Fuel costs",
+  "High",
+  "Oil at elevated levels undercuts fuel-cost relief hopes; Norwegian and Carnival hit 52-week lows in September. Six straight down weeks."
+ ],
+ "FDS": [
+  "AI disruption",
+  "Low",
+  "Fell 5.8% on Sep 10 amid worries about AI reshaping financial-data workflows; peaked Aug 31, so this is a fresh pullback, not a long slide."
+ ],
+ "ABNB": [
+  "AI agent (Muse)",
+  "Medium",
+  "Travel booking sold off as Meta's Muse agent (can book trips directly) went viral Sep 22; also slipped with Booking/Expedia on Sep 8. Only 19 days off its high."
+ ],
+ "EXPE": [
+  "AI agent (Muse)",
+  "Medium",
+  "Fell 7.9% Sep 8 with Booking; hit again Sep 22 as Muse raised fears of AI agents disintermediating online travel agencies."
+ ],
+ "EXE": [
+  "Commodity",
+  "Low",
+  "Natural-gas producers weak; fell 5.8% Sep 16. No company-specific catalyst found."
+ ],
+ "ODFL": [
+  "Fuel costs",
+  "High",
+  "Record ~$6 diesel is squeezing freight margins (J.B. Hunt had its worst day since 2020) and Amazon's LTL expansion looms. Six straight down weeks until this week's bounce."
+ ],
+ "VRSK": [
+  "AI disruption",
+  "Medium",
+  "Barclays cut its target $275→$225 on Sep 8; worry that AI commoditizes insurance data, amplified by the Muse sell-off in insurers."
+ ],
+ "JKHY": [
+  "Sector drag",
+  "Low",
+  "Bank-tech peer weakness; fell 6.4% Sep 15. No single company catalyst found."
+ ],
+ "CBOE": [
+  "Volumes",
+  "Low",
+  "Trading-volume and volatility normalization after the spring spike; down ~27% from its May high."
+ ],
+ "TYL": [
+  "AI disruption",
+  "Low",
+  "Government-software de-rating on AI fears; CEO stock sale and Axon's convert weighed on the group."
+ ],
+ "AON": [
+  "Deal",
+  "High",
+  "Announced a $17B purchase of USI Insurance Services from KKR on Aug 31 and fell ~10% that day on price and leverage worries; kept sliding in September (six straight down days) as analysts cut targets. At a 52-week low."
+ ],
+ "FDXF": [
+  "Fuel costs",
+  "Medium",
+  "Diesel squeeze on LTL carriers plus a leadership shake-up (commercial chief out, Sep 14); Goldman cut its target to $171."
+ ],
+ "ALL": [
+  "AI agent (Muse)",
+  "High",
+  "Sep 22: fell 5.5% as Meta's Muse AI agent — which can shop for and switch insurance policies automatically — sparked a sell-off in insurers."
+ ],
+ "CVNA": [
+  "Sector drag",
+  "Low",
+  "High-beta name drifting lower with consumer-credit and used-car worries; no single catalyst found."
+ ],
+ "WTW": [
+  "Insurance pricing",
+  "Medium",
+  "Broker group weakness on softening pricing, Aon/USI read-through and the Muse sell-off."
+ ],
+ "HAL": [
+  "Commodity",
+  "Medium",
+  "Oil weakness in mid-September on US–Iran diplomacy optimism, ahead of Q3 earnings on Oct 20."
+ ],
+ "CLX": [
+  "Consumer slowdown",
+  "Medium",
+  "Doubts about margin recovery; Barclays target cut; hit a 52-week low Sep 18 before a bounce this week."
+ ],
+ "BR": [
+  "AI disruption",
+  "Medium",
+  "Concern that AI and tokenized equities threaten its proxy and investor-communications franchise."
+ ],
+ "_stories": {
+  "month": "2026-09",
+  "sub": "Three forces explain most of this list.",
+  "tiles": [
+   {
+    "k": "Sep 4 onward",
+    "h": "AI fear hits software.",
+    "p": "Adobe's surprise CEO change and soft outlook on Sep 4 reignited worries that AI undercuts software pricing. Autodesk, Intuit, Roper, Tyler and data providers followed.",
+    "t": "ADBE · INTU · ADSK · ROP · VRSK · BR · FDS · TYL"
+   },
+   {
+    "k": "Sep 22",
+    "h": "Meta's Muse spooks \"sticky\" businesses.",
+    "p": "Meta's Muse AI agent, which shops, books trips and switches insurance and savings on its own, hit No. 1 on the App Store and sparked selling in travel, insurers and banks.",
+    "t": "BKNG · EXPE · ABNB · ALL · JPM · WFC"
+   },
+   {
+    "k": "All month",
+    "h": "Oil, rates and fuel bills.",
+    "p": "Oil near $100 and record diesel hit cruise lines and truckers, while energy stocks pulled back as US–Iran diplomacy advanced. The Fed raised rates to 3.75–4.00% on Sep 16.",
+    "t": "RCL · NCLH · ODFL · FDXF · SLB · HAL"
+   }
+  ]
+ }
+}
