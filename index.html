@@ -183,6 +183,72 @@ a.cell:hover{text-decoration:none;transform:translateY(-2px)}
 .why .pend{color:var(--muted);font-size:13px}
 .hl{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.4}
 .hl span{color:var(--faint);font-size:12px;white-space:nowrap}
+
+/* ===== Full-screen stock view ===== */
+.card{cursor:pointer;transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 6px 24px rgba(0,0,0,.10);transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.card:hover{transform:none}}
+.more{font-weight:600}
+html.sv-lock,html.sv-lock body{overflow:hidden}
+.sv{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;animation:svin .22s ease-out}
+.sv[hidden]{display:none}
+@keyframes svin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sv{animation:none}}
+.sv-top{flex:0 0 auto;display:flex;align-items:center;gap:12px;height:52px;padding:0 max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);background:var(--nav);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);padding-top:env(safe-area-inset-top,0px);box-sizing:content-box}
+.sv-back{border:0;background:none;color:var(--blue);font-size:15px;cursor:pointer;padding:6px 4px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.sv-back svg{width:10px;height:16px}
+.sv-ttl{flex:1;min-width:0;text-align:center;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-ttl span{font-weight:400;color:var(--muted)}
+.sv-step{display:inline-flex;align-items:center;gap:2px;font-size:12px;color:var(--faint);white-space:nowrap}
+.sv-step button{border:0;background:var(--bg2);color:var(--ink);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center}
+.sv-step button:disabled{opacity:.35;cursor:default}
+.sv-step b{font-weight:500;padding:0 6px;font-variant-numeric:tabular-nums}
+.sv-scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sv-in{max-width:1200px;margin:0 auto;padding:28px 22px 64px}
+@media (max-width:560px){.sv-in{padding:18px 16px 48px}.sv-step span{display:none}.sv-back em{display:none}}
+.sv-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px 24px}
+.sv-tk{font-size:clamp(40px,6vw,64px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.sv-nm{font-size:17px;color:var(--muted);margin-top:6px}
+.sv-px{text-align:right}
+.sv-pxv{font-size:clamp(34px,5vw,52px);font-weight:600;letter-spacing:-.035em;line-height:1;border-radius:8px;padding:0 4px}
+.sv-pxc{font-size:17px;font-weight:600;margin-top:6px}
+.sv-pxt{font-size:13px;color:var(--faint);margin-top:4px}
+@media (max-width:560px){.sv-px{text-align:left}}
+.sv-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+.sv-pills .live{margin-left:auto}
+.sv-card{background:var(--tile);border:1px solid #E8E8ED;border-radius:22px;padding:20px;box-shadow:var(--shadow);min-width:0}
+.sv-chartcard{margin-top:24px;padding:16px 16px 12px}
+.sv-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sv-tools .seg{flex-wrap:nowrap}
+.sv-tg{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--tile);color:var(--ink);border-radius:980px;padding:5px 12px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip i{width:10px;height:3px;border-radius:2px;display:inline-block}
+.chip[aria-pressed="false"]{color:var(--faint)}
+.chip[aria-pressed="false"] i{opacity:.35}
+.sv-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);min-height:20px;margin:0 2px 6px;font-variant-numeric:tabular-nums}
+.sv-leg b{color:var(--ink);font-weight:600}
+.sv-chart{position:relative;height:clamp(320px,58vh,560px);width:100%}
+@media (max-width:560px){.sv-tg{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding-inline:4px;width:100%}.sv-tg::-webkit-scrollbar{display:none}.sv-tg>*{flex:0 0 auto}.sv-tg .chip{padding:5px 9px;font-size:12px}.sv-tg .seg button{padding:6px 9px}.sv-tools .seg:first-child{width:100%;justify-content:space-between}.sv-chartcard{padding:12px 10px 10px}.sv-pxv{font-size:38px}.sv-tk{font-size:40px}.sv-chart{height:360px}.sv-tools{gap:8px}.sv-tools .seg button{padding:6px 10px}}
+.sv-msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:15px;padding:24px}
+.sv-rng{font-size:12.5px;color:var(--faint);margin:6px 2px 0}
+.sv-cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+@media (max-width:860px){.sv-cols{grid-template-columns:1fr}}
+.sv-h3{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:0 0 12px}
+.sv-why .tag{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+.sv-why .tag span{color:var(--faint);font-weight:500}
+.sv-why p{margin:0;font-size:16px;line-height:1.5}
+.sv-kf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 14px;margin:0}
+@media (max-width:560px){.sv-kf{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sv-kf dt{font-size:12px;color:var(--faint)}
+.sv-kf dd{margin:2px 0 0;font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+.sv-kf dd small{display:block;font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0}
+.sv-all{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 18px;margin:0}
+@media (max-width:900px){.sv-all{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sv-all dt{font-size:12px;color:var(--faint)}
+.sv-all dd{margin:2px 0 0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.sv-wide{margin-top:16px}
+.sv-spin{width:26px;height:26px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head><body>
 
@@ -226,7 +292,7 @@ a.cell:hover{text-decoration:none;transform:translateY(-2px)}
   <div class="wide">
     <div class="head"><p class="eyebrow">The 50 largest S&amp;P 500 companies</p><h2>Blue Chips.</h2><p id="bcsub"></p></div>
     <div class="heat" id="heat"></div>
-    <div class="legend"><span><i style="background:#C41414"></i>Down this month</span><span><i style="background:#1C803E"></i>Up this month</span><span>Deeper color = bigger move</span><span>Tap a tile for its live quote</span></div>
+    <div class="legend"><span><i style="background:#C41414"></i>Down this month</span><span><i style="background:#1C803E"></i>Up this month</span><span>Deeper color = bigger move</span><span>Tap a tile for its chart</span></div>
     <div class="head" style="padding-top:40px"><h2 style="font-size:clamp(26px,3.6vw,36px)">The blue chips that are falling.</h2></div>
     <div id="bar2"></div>
     <div class="grid" id="grid2"></div>
@@ -241,6 +307,15 @@ a.cell:hover{text-decoration:none;transform:translateY(-2px)}
     <div><b>Data:</b> Yahoo Finance daily closes (split-adjusted) for all 503 S&amp;P 500 members, plus Yahoo quote data for valuation and analyst targets. Rankings and reasons refresh every weekday after the close (about 5:30pm ET). Prices on the cards, the blue-chip tiles and the S&amp;P figure update live from Finnhub during market hours, roughly every minute per stock (faster for the stocks on your screen); % this month, % off the high and this week's bar recalculate from the live price. Confirm prices with your broker before trading. For information only, not investment advice.</div>
   </div>
 </footer>
+
+<div id="sv" class="sv" role="dialog" aria-modal="true" aria-labelledby="svTtl" hidden>
+  <div class="sv-top">
+    <button type="button" class="sv-back" id="svBack" aria-label="Close chart"><svg viewBox="0 0 10 16" aria-hidden="true"><path d="M8.5 1.5 2 8l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back<em>&nbsp;to list</em></button>
+    <div class="sv-ttl" id="svTtl"></div>
+    <div class="sv-step"><button type="button" id="svPrev" aria-label="Previous stock">‹</button><b id="svPos"></b><button type="button" id="svNext" aria-label="Next stock">›</button></div>
+  </div>
+  <div class="sv-scroll" id="svScroll"><div class="sv-in" id="svIn"></div></div>
+</div>
 
 <script>
 const {D,BC,BIG,M}=window.FK;
@@ -288,14 +363,6 @@ function bars(w){
 }
 function card(r,label,open){
   const since=r.tdSinceHi>21?`about ${Math.round(r.tdSinceHi/21)} months`:`${r.tdSinceHi} days`;
-  const extra=[
-    ["Previous close",money(r.prev)],["This week so far",pct(r.curWk)],["Past 5 days",pct(r.w1)],["1 month",pct(r.m1)],["3 months",pct(r.m3)],["Year to date",pct(r.ytd)],["1 year",pct(r.y1)],
-    ["2-year high",money(r.hi2y)+" · "+dt(r.hi2yd,1)],["52-week low",money(r.lo52)+" · "+dt(r.lo52d,1)],["Above 52-week low",pct(r.offLo)],
-    ["Worst day this month",pct(r.worstDay)+" · "+dt(r.worstDayD)],["Down-day streak",r.downDays+(r.downDays===1?" day":" days")],
-    ["RSI (14)",r.rsi==null?"—":Math.round(r.rsi)+(r.rsi<30?" · oversold":"")],["vs 50-day avg",pct(r.v50)],["vs 200-day avg",pct(r.v200)],["Volume vs normal",r.volx==null?"—":r.volx.toFixed(2)+"×"],
-    ["Forward P/E",r.fpe==null?"—":r.fpe.toFixed(1)],["Market cap",r.mc==null?"—":(r.mc>=1000?"$"+(r.mc/1000).toFixed(2)+"T":"$"+r.mc.toFixed(1)+"B")],["Dividend yield",r.dy==null?"—":r.dy.toFixed(1)+"%"],
-    ["Analysts",(r.rec?r.rec.replace("_"," "):"—")+(r.nA?` · ${r.nA}`:"")],["Avg price target",r.tgt?money(r.tgt)+` (${pct(r.upside,0)})`:"—"],["Earnings date",dt(r.ed,1)],
-  ];
   return `<article class="card" data-s="${r.s}" data-label="${esc(label)}">
     <div class="ctop"><span class="rank">${label}</span>${statusPill(r)}</div>
     <div class="idrow">
@@ -313,8 +380,7 @@ function card(r,label,open){
       <div><dt>vs S&amp;P 500 this month</dt><dd class="num ${cls(r.mtd-M.spx_mtd)}">${pct(r.mtd-M.spx_mtd)}</dd></div>
     </dl>
     <div class="why"><div class="tag">${esc(r.theme)}<span>${r.conf==="Pending"?"Not yet researched":r.conf+" confidence"}</span></div>${r.conf==="Pending"?`<p class="pend">New on the list. Latest headlines:</p><ul class="hl">${(r.news||[]).map(n=>`<li><span>${esc(n[0])}</span> ${esc(n[1])}</li>`).join("")||"<li>No recent headlines found.</li>"}</ul>`:`<p>${esc(r.why)}</p>`}</div>
-    <button type="button" class="more" data-s="${r.s}" aria-expanded="${open}">${open?"Hide full stats":"Full stats"} ›</button>
-    ${open?`<dl class="detail">${extra.map(([k,v])=>`<div><dt>${k}</dt><dd class="num">${v}</dd></div>`).join("")}</dl>`:""}
+    <button type="button" class="more" data-s="${r.s}" aria-label="Open ${r.s} chart and full stats">Chart &amp; full stats ›</button>
   </article>`;
 }
 
@@ -354,21 +420,243 @@ function makeBar(el,rows,p,noun,cb){
 }
 
 const S1=makeBar($("#bar1"),D,"f1","stocks",(rows,S)=>{
-  $("#grid").innerHTML=rows.length?rows.map(r=>card(r,"No. "+r.rank,S.open.has(r.s))).join(""):`<p class="empty">No stocks match these filters.</p>`;
+  S.rows=rows;$("#grid").innerHTML=rows.length?rows.map(r=>card(r,"No. "+r.rank,S.open.has(r.s))).join(""):`<p class="empty">No stocks match these filters.</p>`;
 });
-$("#grid").addEventListener("click",e=>{const b=e.target.closest(".more");if(!b)return;const s=b.dataset.s;S1.open.has(s)?S1.open.delete(s):S1.open.add(s);S1.run()});
+$("#grid").addEventListener("click",e=>{if(e.target.closest("a"))return;const c=e.target.closest("article.card");if(c)window.FKsv.open(c.dataset.s,(S1.rows||D).map(r=>r.s))});
 
 const nDown=BIG.filter(b=>b[2]<0).length;
 $("#bcsub").textContent=`${nDown} of the 50 biggest companies are down in ${M.monthName}. Here's the whole group, largest first.`;
 const heatT=v=>{const a=Math.min(Math.abs(v)/12,1);return a<0.5?0.08+0.6*a:0.72+0.28*(a-0.5)/0.5};
 const heatColor=v=>{const lo=v<0?[253,227,225]:[222,242,228],hi=v<0?[196,20,20]:[28,128,62],t=heatT(v);return `rgb(${lo.map((x,i)=>Math.round(x+(hi[i]-x)*t))})`};
 const heatInk=v=>heatT(v)<0.5?(v<0?"#8A1A12":"#1B5E30"):"#fff";
-$("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell" data-s="${s}" href="https://finance.yahoo.com/quote/${encodeURIComponent(s)}/" target="_blank" rel="noopener" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open live quote"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
+$("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell" data-s="${s}" href="#chart=${encodeURIComponent(s)}" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open chart"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
 const S2=makeBar($("#bar2"),BC,"f2","falling blue chips",(rows,S)=>{
-  $("#grid2").innerHTML=rows.length?rows.map(r=>card(r,`No. ${r.capRank} by size`,S.open.has(r.s))).join(""):`<p class="empty">No blue chips match these filters.</p>`;
+  S.rows=rows;$("#grid2").innerHTML=rows.length?rows.map(r=>card(r,`No. ${r.capRank} by size`,S.open.has(r.s))).join(""):`<p class="empty">No blue chips match these filters.</p>`;
 });
-$("#grid2").addEventListener("click",e=>{const b=e.target.closest(".more");if(!b)return;const s=b.dataset.s;S2.open.has(s)?S2.open.delete(s):S2.open.add(s);S2.run()});
+$("#grid2").addEventListener("click",e=>{if(e.target.closest("a"))return;const c=e.target.closest("article.card");if(c)window.FKsv.open(c.dataset.s,(S2.rows||BC).map(r=>r.s))});
+$("#heat").addEventListener("click",e=>{const c=e.target.closest("a.cell");if(!c||e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault();window.FKsv.open(c.dataset.s,BIG.map(b=>b[0]))});
 S1.run();S2.run();
+/* ===== FULL-SCREEN STOCK VIEW (candles) ===== */
+(function(){
+  const LIBS=["https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js",
+              "https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"];
+  const UP="#248A3D",DN="#D70015",MA50="#0066CC",MA200="#B25000";
+  const sv=$("#sv"),inEl=$("#svIn"),scroller=$("#svScroll");
+  let libP=null,cur=null,list=[],chart=null,ser={},CB=[],hist=null,range="6M",mode="candle",show={ma50:true,ma200:true,vol:true},token=0,lastFocus=null;
+  const bigRank={};BIG.forEach(([s,mc],i)=>bigRank[s]={i:i+1,mc});
+  const loadLib=()=>libP||(libP=new Promise((ok,no)=>{let i=0;const next=()=>{if(window.LightweightCharts)return ok(window.LightweightCharts);if(i>=LIBS.length)return no(new Error("lib"));const sc=document.createElement("script");sc.src=LIBS[i++];sc.async=true;sc.onload=()=>window.LightweightCharts?ok(window.LightweightCharts):next();sc.onerror=next;document.head.appendChild(sc)};next()}).catch(e=>{libP=null;throw e}));
+  const histCache={};
+  const loadHist=s=>histCache[s]||(histCache[s]=fetch(`history/${encodeURIComponent(s)}.json?v=${encodeURIComponent(M.generated||M.asof)}`).then(r=>{if(!r.ok)throw new Error("nohist");return r.json()}).catch(e=>{delete histCache[s];throw e}));
+  const rowFor=s=>D.find(r=>r.s===s)||BC.find(r=>r.s===s)||null;
+  const vol=v=>v==null?"—":v>=1e9?(v/1e9).toFixed(2)+"B":v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?Math.round(v/1e3)+"K":String(v);
+  const nyDate=t=>new Date(t*1000).toLocaleDateString("en-CA",{timeZone:"America/New_York"});
+
+  function statRows(r){
+    const since=r.tdSinceHi==null?"":r.tdSinceHi>21?`about ${Math.round(r.tdSinceHi/21)} months`:`${r.tdSinceHi} days`;
+    const key=[
+      ["This month",pct(r.mtd),cls(r.mtd),"vs S&P "+pct(r.mtd-M.spx_mtd)],
+      ["Off 52-week high",pct(r.dd52),cls(r.dd52),r.offLo!=null&&r.offLo<1?"at a 52-week low":""],
+      ["52-week high",money(r.hi52),"",dt(r.hi52d,1)],
+      ["Falling since high",r.tdSinceHi==null?"—":r.tdSinceHi+" days","",since?"trading days · "+since:""],
+      ["Last up week",r.lastPosWk?"Wk of "+dt(r.lastPosWk):"—","",r.lastPosWkRet!=null?"closed "+pct(r.lastPosWkRet):""],
+      ["Down-week streak",r.downWks==null?"—":r.downWks+(r.downWks===1?" week":" weeks"),"",r.curWk!=null?"this week "+pct(r.curWk):""],
+    ];
+    const all=[
+      ["Previous close",money(r.prev)],["Past 5 days",pct(r.w1)],["1 month",pct(r.m1)],["3 months",pct(r.m3)],["Year to date",pct(r.ytd)],["1 year",pct(r.y1)],
+      ["2-year high",r.hi2y?money(r.hi2y)+" · "+dt(r.hi2yd,1):"—"],["52-week low",r.lo52?money(r.lo52)+" · "+dt(r.lo52d,1):"—"],["Above 52-week low",pct(r.offLo)],
+      ["3-month peak",r.p3?money(r.p3)+" · "+dt(r.p3d):"—"],["Worst day this month",r.worstDay!=null?pct(r.worstDay)+" · "+dt(r.worstDayD):"—"],["Down-day streak",r.downDays==null?"—":r.downDays+(r.downDays===1?" day":" days")],
+      ["RSI (14)",r.rsi==null?"—":Math.round(r.rsi)+(r.rsi<30?" · oversold":r.rsi>70?" · overbought":"")],["vs 50-day avg",pct(r.v50)],["vs 200-day avg",pct(r.v200)],["Volume vs normal",r.volx==null?"—":r.volx.toFixed(2)+"×"],
+      ["Market cap",r.mc==null?"—":capFmt(r.mc)],["Forward P/E",r.fpe==null?"—":r.fpe.toFixed(1)],["Dividend yield",r.dy==null?"—":r.dy.toFixed(1)+"%"],["Earnings date",r.ed?dt(r.ed,1):"—"],
+      ["Analysts",r.rec?r.rec.replace("_"," ")+(r.nA?` · ${r.nA}`:""):"—"],["Avg price target",r.tgt?money(r.tgt)+` (${pct(r.upside,0)})`:"—"],
+    ].filter(x=>x[1]!=="—");
+    return {key,all};
+  }
+
+  function whyHtml(r){
+    if(!r.theme)return `<p class="pend" style="color:var(--muted);font-size:15px">This company isn't on either falling list, so there's no write-up. It's here because it's one of the 50 largest in the S&amp;P 500.</p>`;
+    if(r.conf==="Pending")return `<div class="tag">Reason pending<span>Not yet researched</span></div><p class="pend" style="color:var(--muted);font-size:14px;margin-bottom:8px">New on the list. Latest headlines:</p><ul class="hl">${(r.news||[]).map(n=>`<li><span>${esc(n[0])}</span> ${esc(n[1])}</li>`).join("")||"<li>No recent headlines found.</li>"}</ul>`;
+    return `<div class="tag">${esc(r.theme)}<span>${esc(r.conf)} confidence</span></div><p>${esc(r.why)}</p>`;
+  }
+
+  function priceBlock(r,liveT){
+    const ch=r.last!=null&&r.prev!=null?r.last-r.prev:null;
+    return `<div class="sv-pxv num" id="svPx">${money(r.last)}</div>
+      <div class="sv-pxc num ${cls(r.day)}" id="svCh">${ch==null?"":`${ch>0?"+":ch<0?"−":""}$${rnd(ch,2)} (${pct(r.day,2)})`} <span style="color:var(--faint);font-weight:500">today</span></div>
+      <div class="sv-pxt" id="svT">${liveT?`<b class="lvdot"></b>Live · ${liveT} ET`:"Close · "+dt(r.asof||M.asof,1)}</div>`;
+  }
+
+  function render(r,label){
+    const {key,all}=statRows(r);
+    const pillHtml=r.curWk!=null?statusPill(r):"";
+    inEl.innerHTML=`
+      <div class="sv-head">
+        <div style="min-width:0"><div class="sv-tk">${esc(r.s)}</div><div class="sv-nm">${esc(r.name||"")}${r.sector?" · "+esc(r.sector):""}</div></div>
+        <div class="sv-px" id="svPxBox">${priceBlock(r,r.liveT)}</div>
+      </div>
+      <div class="sv-pills"><span class="pill ${r.mtd<0?"p-fall":"p-up"}" id="svMtd">${pct(r.mtd)} in ${esc(M.monthName)}</span>${pillHtml}${label?`<span class="pill p-flat" style="background:var(--bg2);color:var(--muted)">${esc(label)}</span>`:""}
+        <a class="live" href="https://finance.yahoo.com/quote/${encodeURIComponent(r.s)}/" target="_blank" rel="noopener"><i></i>Yahoo quote ↗</a></div>
+      <div class="sv-card sv-chartcard">
+        <div class="sv-tools">
+          <div class="seg" role="group" aria-label="Time range" id="svRange">${["1M","3M","6M","YTD","1Y","2Y"].map(k=>`<button type="button" data-r="${k}" aria-pressed="${k===range}">${k}</button>`).join("")}</div>
+          <div class="sv-tg">
+            <div class="seg" role="group" aria-label="Chart type" id="svMode"><button type="button" data-m="candle" aria-pressed="${mode==="candle"}">Candles</button><button type="button" data-m="line" aria-pressed="${mode==="line"}">Line</button></div>
+            <button type="button" class="chip" data-t="ma50" aria-pressed="${show.ma50}"><i style="background:${MA50}"></i>50-day</button>
+            <button type="button" class="chip" data-t="ma200" aria-pressed="${show.ma200}"><i style="background:${MA200}"></i>200-day</button>
+            <button type="button" class="chip" data-t="vol" aria-pressed="${show.vol}"><i style="background:#A1A1A6"></i>Volume</button>
+          </div>
+        </div>
+        <div class="sv-leg" id="svLeg"></div>
+        <div class="sv-chart" id="svChart"><div class="sv-msg"><div class="sv-spin" role="status" aria-label="Loading chart"></div></div></div>
+        <div class="sv-rng" id="svRng"></div>
+      </div>
+      <div class="sv-cols">
+        <div class="sv-card sv-why"><h3 class="sv-h3">Why it's falling</h3>${whyHtml(r)}</div>
+        <div class="sv-card"><h3 class="sv-h3">The fall, in numbers</h3><dl class="sv-kf">${key.map(([k,v,c,s])=>`<div><dt>${k}</dt><dd class="num ${c}">${v}${s?`<small>${esc(s)}</small>`:""}</dd></div>`).join("")}</dl></div>
+      </div>
+      ${r.wks&&r.wks.length?`<div class="sv-card sv-wide"><h3 class="sv-h3">Weekly returns · last 10 weeks</h3><div style="max-width:720px;margin:0 auto">${bars(r.wks)}</div><div class="spark"><div class="lbl" style="max-width:720px;margin:0 auto;width:100%"><span>${M.wkdates[0]}</span><span>This week (so far)</span></div></div></div>`:""}
+      <div class="sv-card sv-wide"><h3 class="sv-h3">All stats</h3><dl class="sv-all">${all.map(([k,v])=>`<div><dt>${k}</dt><dd class="num">${v}</dd></div>`).join("")}</dl></div>
+      <p class="sv-rng" style="margin-top:18px">Daily candles from Yahoo Finance, updated each weekday after the close; today's candle updates live from Finnhub during market hours. For information only, not investment advice.</p>`;
+  }
+
+  function sma(k){const out=[];let sum=0;for(let i=0;i<CB.length;i++){sum+=CB[i].close;if(i>=k)sum-=CB[i-k].close;if(i>=k-1)out.push({time:CB[i].time,value:+(sum/k).toFixed(2)})}return out}
+  function legend(b,prevClose){
+    const el=$("#svLeg");if(!el||!b)return;
+    const ch=prevClose?(b.close/prevClose-1)*100:null;
+    el.innerHTML=`<span><b>${dt(b.time,1)}</b></span><span>O <b>${money(b.open)}</b></span><span>H <b>${money(b.high)}</b></span><span>L <b>${money(b.low)}</b></span><span>C <b>${money(b.close)}</b></span>${ch!=null?`<span class="${cls(ch)}"><b style="color:inherit">${pct(ch,2)}</b></span>`:""}${b.vol?`<span>Vol <b>${vol(b.vol)}</b></span>`:""}`;
+  }
+  function setRange(){
+    if(!chart||!CB.length)return;
+    const last=CB[CB.length-1].time,d=new Date(last+"T12:00:00Z");
+    const back={"1M":[0,1],"3M":[0,3],"6M":[0,6],"1Y":[1,0],"2Y":[2,0]}[range];
+    let from;
+    if(range==="YTD")from=last.slice(0,4)+"-01-01";
+    else{const f=new Date(d);f.setUTCFullYear(f.getUTCFullYear()-back[0]);f.setUTCMonth(f.getUTCMonth()-back[1]);from=f.toISOString().slice(0,10)}
+    const i=Math.max(0,CB.findIndex(b=>b.time>=from));
+    chart.timeScale().setVisibleLogicalRange({from:i-0.5,to:CB.length-0.5+ (range==="1M"?0.5:range==="3M"?1:2)});
+    const a=CB[Math.max(0,i-1)].close,z=CB[CB.length-1].close,ch=(z/a-1)*100;
+    const r=$("#svRng");if(r)r.innerHTML=`${range==="YTD"?"Year to date":range==="2Y"?"Past 2 years":"Past "+range.replace("M"," month"+(range==="1M"?"":"s")).replace("1Y","year")}: <b class="${cls(ch)}">${pct(ch,1)}</b> · from ${money(a)} to ${money(z)}`;
+  }
+  function applyVis(){
+    if(!chart)return;
+    ser.candle.applyOptions({visible:mode==="candle"});ser.line.applyOptions({visible:mode==="line"});
+    ser.ma50.applyOptions({visible:show.ma50});ser.ma200.applyOptions({visible:show.ma200});ser.vol.applyOptions({visible:show.vol});
+    chart.priceScale("right").applyOptions({scaleMargins:show.vol?{top:.08,bottom:.22}:{top:.08,bottom:.06}});
+  }
+  function drawData(){
+    ser.candle.setData(CB.map(({time,open,high,low,close})=>({time,open,high,low,close})));
+    ser.line.setData(CB.map(b=>({time:b.time,value:b.close})));
+    ser.vol.setData(CB.filter(b=>b.vol!=null).map(b=>({time:b.time,value:b.vol,color:b.close>=b.open?"rgba(36,138,61,.28)":"rgba(215,0,21,.26)"})));
+    ser.ma50.setData(sma(50));ser.ma200.setData(sma(200));
+  }
+  function buildChart(LW){
+    const el=$("#svChart");el.innerHTML="";
+    const css=getComputedStyle(document.documentElement);
+    chart=LW.createChart(el,{autoSize:true,
+      layout:{background:{type:"solid",color:"#FFFFFF"},textColor:"#6E6E73",fontFamily:css.getPropertyValue("--font")||"system-ui",fontSize:12},
+      grid:{vertLines:{color:"#F2F2F4"},horzLines:{color:"#F2F2F4"}},
+      rightPriceScale:{borderColor:"#E5E5EA"},timeScale:{borderColor:"#E5E5EA",rightOffset:2,minBarSpacing:1.5},
+      crosshair:{mode:LW.CrosshairMode.Normal},handleScroll:{vertTouchDrag:false},
+      localization:{locale:"en-US",priceFormatter:p=>"$"+p.toFixed(2)}});
+    ser.vol=chart.addHistogramSeries({priceScaleId:"vol",priceFormat:{type:"volume"},lastValueVisible:false,priceLineVisible:false});
+    chart.priceScale("vol").applyOptions({scaleMargins:{top:.82,bottom:0}});
+    ser.line=chart.addAreaSeries({lineColor:"#0066CC",topColor:"rgba(0,102,204,.18)",bottomColor:"rgba(0,102,204,0)",lineWidth:2,visible:false});
+    ser.candle=chart.addCandlestickSeries({upColor:UP,downColor:DN,borderUpColor:UP,borderDownColor:DN,wickUpColor:UP,wickDownColor:DN});
+    ser.ma50=chart.addLineSeries({color:MA50,lineWidth:1.5,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
+    ser.ma200=chart.addLineSeries({color:MA200,lineWidth:1.5,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
+    drawData();applyVis();setRange();
+    const idx={};CB.forEach((b,i)=>idx[b.time]=i);
+    chart.subscribeCrosshairMove(p=>{
+      let i=p&&p.time!=null?idx[typeof p.time==="string"?p.time:`${p.time.year}-${String(p.time.month).padStart(2,"0")}-${String(p.time.day).padStart(2,"0")}`]:undefined;
+      if(i==null)i=CB.length-1;legend(CB[i],i>0?CB[i-1].close:null);
+    });
+    legend(CB[CB.length-1],CB.length>1?CB[CB.length-2].close:null);
+  }
+  function destroy(){if(chart){chart.remove();chart=null}ser={};CB=[]}
+
+  async function open(s,push){
+    const r0=rowFor(s);const my=++token;
+    if(sv.hidden)lastFocus=document.activeElement;
+    destroy();
+    let r=r0?Object.assign({},r0):{s,name:s,asof:M.asof};
+    if(!r0&&bigRank[s])r.mc=bigRank[s].mc;
+    cur=s;window.FKsv.cur=s;
+    const pos=list.indexOf(s);
+    $("#svTtl").innerHTML=`${esc(s)} <span>${esc(r.name&&r.name!==s?r.name:"")}</span>`;
+    $("#svPos").textContent=pos>=0?`${pos+1} / ${list.length}`:"";
+    $("#svPrev").disabled=pos<=0;$("#svNext").disabled=pos<0||pos>=list.length-1;
+    const label=r0?(D.includes(r0)||D.find(x=>x.s===s)?`No. ${r0.rank} falling knife`:`No. ${r0.capRank} by size`):(bigRank[s]?`No. ${bigRank[s].i} by size`:"");
+    render(r,label);
+    if(sv.hidden){sv.hidden=false;document.documentElement.classList.add("sv-lock")}
+    scroller.scrollTop=0;$("#svBack").focus({preventScroll:true});
+    const want=`#chart=${encodeURIComponent(s)}`;
+    if(location.hash!==want){push?history.pushState({sv:1},"",want):history.replaceState(history.state,"",want)}
+    let h,LW;
+    try{[h,LW]=await Promise.all([loadHist(s),loadLib()])}
+    catch(e){
+      if(my!==token)return;
+      const el=$("#svChart");if(el)el.innerHTML=`<div class="sv-msg">${e.message==="nohist"?"The candle chart for this stock isn't ready yet.<br>It's added on the next daily update after the close.":"The chart couldn't load. Check your connection and try again."}</div>`;
+      return;
+    }
+    if(my!==token)return;
+    hist=h;
+    if(!r0&&h.m){r=Object.assign({},h.m,{s,name:h.name,sector:h.sector,mc:bigRank[s]?bigRank[s].mc:null,asof:h.m.asof});
+      render(r,label);$("#svTtl").innerHTML=`${esc(s)} <span>${esc(h.name)}</span>`}
+    CB=h.t.map((t,i)=>({time:t,open:h.o[i],high:h.h[i],low:h.l[i],close:h.c[i],vol:h.v?h.v[i]:null}));
+    const lq=window.FKsv.lastQuote[s];
+    buildChart(LW);
+    if(lq)quote(s,lq.q,lq.mtd);
+  }
+  function close(){
+    if(sv.hidden)return;
+    token++;destroy();cur=null;window.FKsv.cur=null;
+    sv.hidden=true;document.documentElement.classList.remove("sv-lock");
+    if(location.hash.startsWith("#chart=")){history.state&&history.state.sv?history.back():history.replaceState(null,"",location.pathname+location.search)}
+    const back=document.querySelector(`article.card[data-s="${CSS.escape(openedFrom||"")}"] .more`)||lastFocus;
+    if(back&&back.focus)back.focus({preventScroll:false});
+  }
+  let openedFrom=null;
+  function step(d){const i=list.indexOf(cur)+d;if(i>=0&&i<list.length){openedFrom=list[i];open(list[i],false)}}
+
+  function quote(s,q,mtd){
+    if(s!==cur||!q||!q.c)return;
+    const r=rowFor(s)||{};
+    const px=$("#svPx"),prevTxt=px&&px.textContent;
+    if(px){px.textContent=money(q.c);if(prevTxt&&prevTxt!==px.textContent){px.classList.remove("flash-up","flash-dn");void px.offsetWidth;px.classList.add(q.c>=parseFloat(prevTxt.replace(/[$,]/g,""))?"flash-up":"flash-dn")}}
+    const ch=$("#svCh");if(ch&&q.d!=null){ch.className="sv-pxc num "+cls(q.dp);ch.innerHTML=`${q.d>0?"+":q.d<0?"−":""}$${rnd(q.d,2)} (${pct(q.dp,2)}) <span style="color:var(--faint);font-weight:500">today</span>`}
+    const t=$("#svT");if(t&&q.t)t.innerHTML=`<b class="lvdot"></b>Live · ${new Date(q.t*1000).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit",timeZone:"America/New_York"})} ET`;
+    const m=$("#svMtd");if(m&&mtd!=null){m.textContent=`${pct(mtd)} in ${M.monthName}`;m.className="pill "+(mtd<0?"p-fall":"p-up")}
+    if(!chart||!CB.length||!q.t||q.o==null||!q.h)return;
+    const day=nyDate(q.t),last=CB[CB.length-1];
+    if(day<last.time)return;
+    const b={time:day,open:q.o,high:Math.max(q.h,q.c),low:Math.min(q.l||q.c,q.c),close:q.c,vol:day===last.time?last.vol:null};
+    if(day===last.time)CB[CB.length-1]=b;else CB.push(b);
+    ser.candle.update({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close});
+    ser.line.update({time:b.time,value:b.close});
+    const n=CB.length;[["ma50",50],["ma200",200]].forEach(([k,p])=>{if(n>=p){let sum=0;for(let i=n-p;i<n;i++)sum+=CB[i].close;ser[k].update({time:b.time,value:+(sum/p).toFixed(2)})}});
+    legend(b,n>1?CB[n-2].close:null);
+  }
+
+  window.FKsv={cur:null,quote,lastQuote:{},open:(s,l,push=true)=>{list=l&&l.length?l:[s];openedFrom=s;open(s,push)}};
+
+  $("#svBack").addEventListener("click",close);
+  $("#svPrev").addEventListener("click",()=>step(-1));
+  $("#svNext").addEventListener("click",()=>step(1));
+  inEl.addEventListener("click",e=>{
+    const rb=e.target.closest("[data-r]");if(rb){range=rb.dataset.r;inEl.querySelectorAll("#svRange button").forEach(b=>b.setAttribute("aria-pressed",b===rb));setRange();return}
+    const mb=e.target.closest("[data-m]");if(mb){mode=mb.dataset.m;inEl.querySelectorAll("#svMode button").forEach(b=>b.setAttribute("aria-pressed",b===mb));applyVis();return}
+    const tb=e.target.closest("[data-t]");if(tb){const k=tb.dataset.t;show[k]=!show[k];tb.setAttribute("aria-pressed",show[k]);applyVis()}
+  });
+  document.addEventListener("keydown",e=>{
+    if(sv.hidden)return;
+    if(e.key==="Escape"){e.preventDefault();close()}
+    else if((e.key==="ArrowLeft"||e.key==="ArrowRight")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&!e.target.closest("#svChart")){e.preventDefault();step(e.key==="ArrowLeft"?-1:1)}
+    else if(e.key==="Tab"){const f=[...sv.querySelectorAll("button:not([disabled]),a[href]")].filter(x=>x.offsetParent);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+  });
+  const fromHash=()=>{const m=location.hash.match(/^#chart=([^&]+)/);if(m){const s=decodeURIComponent(m[1]).toUpperCase();if(rowFor(s)||bigRank[s]){if(cur!==s){list=list.includes(s)?list:(D.find(r=>r.s===s)?D.map(r=>r.s):BC.find(r=>r.s===s)?BC.map(r=>r.s):BIG.map(b=>b[0]));openedFrom=s;open(s,false)}return}}if(!sv.hidden){token++;destroy();cur=null;window.FKsv.cur=null;sv.hidden=true;document.documentElement.classList.remove("sv-lock")}};
+  window.addEventListener("popstate",fromHash);
+  fromHash();
+})();
+
 
 /* ===== LIVE PRICES (Finnhub free API, round-robin polling) ===== */
 (function(){
@@ -397,6 +685,7 @@ S1.run();S2.run();
     const newWeek=weekKey(tDate+"T12:00:00Z")!==asofWeek;
     const mtd=(q.c/base-1)*100;
     if(s==="SPY"){const el=document.getElementById("spxv");if(el){el.textContent=pct(mtd,1);el.className="num "+cls(mtd)}const l=document.getElementById("spxl");if(l)l.textContent="S&P 500 this month · live";return}
+    if(window.FKsv){window.FKsv.lastQuote[s]={q,mtd};window.FKsv.quote(s,q,mtd)}
     rowsFor(s).forEach(r=>{
       r.last=q.c;r.prev=q.pc;r.day=q.dp;r.mtd=mtd;
       r.dd52=q.c>=r.hi52?0:(q.c/r.hi52-1)*100;
@@ -426,7 +715,7 @@ S1.run();S2.run();
   const observeAll=()=>{io.disconnect();visible.clear();document.querySelectorAll("article.card[data-s],a.cell[data-s]").forEach(el=>io.observe(el))};
   new MutationObserver(()=>{clearTimeout(observeAll._t);observeAll._t=setTimeout(observeAll,200)}).observe(document.body,{childList:true,subtree:true});
   observeAll();
-  const pick=()=>{const pool=syms.filter(s=>visible.has(s)||s==="SPY");const cand=(pool.length?pool:syms).slice().sort((a,b)=>lastAt[a]-lastAt[b]);
+  const pick=()=>{const fc=window.FKsv&&window.FKsv.cur;pick.f=(pick.f||0)+1;if(fc&&REF[fc]&&pick.f%2===1)return fc;const pool=syms.filter(s=>visible.has(s)||s==="SPY");const cand=(pool.length?pool:syms).slice().sort((a,b)=>lastAt[a]-lastAt[b]);
     // every 4th pick, service the least-recently-updated symbol overall so off-screen ones stay fresh
     pick.n=(pick.n||0)+1;if(pick.n%4===0)return syms.slice().sort((a,b)=>lastAt[a]-lastAt[b])[0];return cand[0]};
   let pausedUntil=0,fails=0,ok=0;

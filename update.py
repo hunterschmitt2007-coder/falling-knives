@@ -12,6 +12,8 @@ import datetime as dt
 import io
 import json
 import math
+import os
+import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -55,7 +57,7 @@ def download(symbols):
         for s in chunk:
             try:
                 sub = raw[s] if len(chunk) > 1 else raw
-                sub = sub[["Close", "High", "Low", "Volume"]].dropna(subset=["Close"])
+                sub = sub[["Open", "High", "Low", "Close", "Volume"]].dropna(subset=["Close"])
                 if len(sub) > 60:
                     frames[s] = sub
             except Exception:
@@ -180,6 +182,37 @@ def details(s):
     return s, out
 
 
+def write_history(syms, frames, uni, M):
+    """One small JSON file per stock with ~2 years of daily candles for the chart view."""
+    os.makedirs("history", exist_ok=True)
+    n = 0
+    for s in syms:
+        df = frames.get(s)
+        if df is None:
+            continue
+        C = [float(x) for x in df["Close"]]
+        pick = lambda col: [r2(c if pd.isna(x) else x) for x, c in zip(df[col], C)]
+        O, H, L = pick("Open"), pick("High"), pick("Low")
+        out = {
+            "s": s, "name": uni.get(s, {}).get("name", s), "sector": uni.get(s, {}).get("sector"),
+            "t": [d.strftime("%Y-%m-%d") for d in df.index],
+            "o": O, "h": [max(h, o, r2(c)) for h, o, c in zip(H, O, C)],
+            "l": [min(l, o, r2(c)) for l, o, c in zip(L, O, C)], "c": [r2(c) for c in C],
+            "v": [0 if pd.isna(v) else int(v) for v in df["Volume"]],
+        }
+        if s in M:
+            out["m"] = {k: v for k, v in M[s].items() if k not in ("base",)}
+        with open(f"history/{s}.json", "w") as f:
+            json.dump(out, f, separators=(",", ":"))
+        n += 1
+    # The workflow only stages data.js, so stage the chart files here too.
+    try:
+        subprocess.run(["git", "add", "history"], check=False)
+    except Exception as e:  # noqa
+        print("git add history failed", e, file=sys.stderr)
+    print(f"wrote {n} chart history files")
+
+
 def auto_stories(D, month_name):
     themes = {}
     for r in D:
@@ -264,6 +297,7 @@ def main():
         "storySub": stories_cfg.get("sub") if stories else "The biggest themes behind this list.",
         "generated": dt.datetime.utcnow().isoformat(timespec="seconds") + "Z",
     }
+    write_history(sorted(set(card_syms) | set(big)), frames, uni, M)
     payload = {"D": D, "BC": BC, "BIG": BIG, "M": meta, "BASE": BASE}
     with open("data.js", "w") as f:
         f.write("window.FK=" + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n")
