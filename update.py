@@ -307,7 +307,7 @@ def implied_vol(px, S, K, T):
 
 
 def put_options(s, last, asof):
-    """~30-day puts near 20/30/40 delta. IV is solved from the option price so after-hours quotes stay sane."""
+    """~37-day puts near 20/30/40 delta. IV is solved from the option price so after-hours quotes stay sane."""
     try:
         t = yf.Ticker(s)
         exps = list(t.options or [])
@@ -315,7 +315,7 @@ def put_options(s, last, asof):
         for e in exps:
             dte = (dt.date.fromisoformat(e) - asof).days
             if dte < 7: continue
-            score = abs(dte - 30) + (0 if 20 <= dte <= 50 else 100)
+            score = abs(dte - 37) + (0 if 27 <= dte <= 55 else 100)
             if best is None or score < best[0]: best = (score, e, dte)
         if not best: return s, None
         _, exp, dte = best
@@ -451,11 +451,13 @@ def build_digest(meta, D, BC, G, V, prev_syms, asof):
     url = site_url()
     fmt = lambda v: ("+" if v > 0 else "") + f"{v:.1f}%"
     L = [f"## {asof.strftime('%A, %b %-d')} — S&P 500 {fmt(meta['spx_mtd'])} in {meta['monthName']}", ""]
-    pk = (meta.get("pick") or {})
-    if pk:
-        tag = f"**FINAL PICK for {meta['monthName']}** (buy after the close)" if pk.get("final") else "**This month's pattern pick** (leading as of today; locks at the month's last close)"
-        L += [tag, f"- **{pk['s']}** {pk['name']} — score {pk['score']}/4, {fmt(pk['drop'])} this month, ${pk['px']:.2f}"
-              + (" · next: " + ", ".join(f"{a} ({b}/4)" for a, b, c in pk.get("next", [])) if pk.get("next") else ""), ""]
+    bk = (meta.get("basket") or {})
+    if bk:
+        bs = bk.get("syms", [])
+        tag = f"**FINAL BASKET for {meta['monthName']}** (buy after the close, equal dollars each)" if bk.get("final") else "**This month's basket** (knives scoring 3+; locks at the month's last close)"
+        L.append(tag)
+        L.append(("- " + ", ".join(f"**{a}** ({c}/4, {fmt(bk.get('drop', {}).get(a, 0))})" for a, _, c in bs)) if bs else "- Empty so far: no knife scores 3+ (the rule sits out)")
+        L.append("")
     new = [r for r in D if r["s"] not in prev_syms] if prev_syms else []
     if new:
         L.append("**New falling knives today**")
@@ -486,7 +488,7 @@ def build_digest(meta, D, BC, G, V, prev_syms, asof):
     rich = [r for r in D + BC if r.get("pAnn")]
     seen = set(); rich = [r for r in sorted(rich, key=lambda r: -r["pAnn"]) if not (r["s"] in seen or seen.add(r["s"]))]
     if rich:
-        L.append("**Richest 30-delta puts on the falling lists (~30 days)**")
+        L.append("**Richest 30-delta puts on the falling lists (~37 days)**")
         for r in rich[:5]:
             p = next(x for x in r["opt"]["puts"] if x["d"] == 30)
             L.append(f"- **{r['s']}** ${p['k']:g} put ({abs(p['otm']):.0f}% below) · ${p['px']:.2f} · {p['ann']:.0f}% annualized · IV {r['opt']['atm']:.0f}%" + (f" · earnings {r['ed']}" if r.get("ed") and asof.isoformat() <= r["ed"] <= r["opt"]["exp"] else ""))
@@ -526,97 +528,155 @@ def is_last_trading_day(d):
     return n.month != d.month
 
 
-def update_pick_log(D, last_date):
-    """This month's pattern pick: highest pick-pattern score, ties -> biggest drop. Locks at the last close of the month."""
-    log = load_json("picklog.json", {})
-    key = last_date.strftime("%Y-%m")
-    for k, v in log.items():
-        if k < key and not v.get("final"):
-            v["final"] = True
-    cands = sorted([r for r in D if r.get("pat")], key=lambda r: (-r["pat"]["score"], r["mtd"]))
-    if not cands:
-        return log, None
-    lead = cands[0]
+def _lock_state(last_date):
     try:
         from zoneinfo import ZoneInfo
         now_ny = dt.datetime.now(ZoneInfo("America/New_York"))
     except Exception:  # noqa
         now_ny = dt.datetime.utcnow() - dt.timedelta(hours=4)
     after_close = last_date < now_ny.date() or now_ny.hour * 60 + now_ny.minute >= 16 * 60 + 5
-    final = is_last_trading_day(last_date) and after_close
-    prev = log.get(key)
-    if not (prev and prev.get("final") and prev.get("asof", "") >= last_date.isoformat() and prev.get("src") == "live") or final:
+    return is_last_trading_day(last_date) and after_close
+
+
+def update_pick_log(D, last_date):
+    """Monthly basket = every knife with pick-pattern score 3+ (equal dollars each).
+    The top of the basket (highest score, ties -> biggest drop) is also logged as the single pick.
+    Both lock at the close on the month's last trading day."""
+    log = load_json("picklog.json", {})
+    blog = load_json("basketlog.json", {})
+    key = last_date.strftime("%Y-%m")
+    for L in (log, blog):
+        for k, v in L.items():
+            if k < key and not v.get("final"):
+                v["final"] = True
+    cands = sorted([r for r in D if r.get("pat")], key=lambda r: (-r["pat"]["score"], r["mtd"]))
+    final = _lock_state(last_date)
+    def keep(prev):
+        return prev and prev.get("final") and prev.get("src") == "live" and prev.get("asof", "") >= last_date.isoformat() and not final
+    if cands and not keep(log.get(key)):
+        lead = cands[0]
         log[key] = {"s": lead["s"], "name": lead["name"], "score": lead["pat"]["score"], "drop": lead["mtd"], "px": lead["last"],
                     "chk": {k: lead["pat"][k] for k in "tcnd"}, "src": "live", "yf": lead["s"], "asof": last_date.isoformat(),
                     "final": final, "next": [[r["s"], r["pat"]["score"], r["mtd"]] for r in cands[1:3]]}
+    if not keep(blog.get(key)):
+        members = [r for r in cands if r["pat"]["score"] >= 3]
+        blog[key] = {"syms": [[r["s"], r["s"], r["pat"]["score"]] for r in members], "src": "live",
+                     "asof": last_date.isoformat(), "final": final,
+                     "px": {r["s"]: r["last"] for r in members}, "drop": {r["s"]: r["mtd"] for r in members}}
     write_json("picklog.json", log)
-    return log, key
+    write_json("basketlog.json", blog)
+    return log, blog, (key if cands else None)
 
 
-def pick_performance(log, spy_frame):
-    """Split-adjusted return of each pick (1 share, bought at that month's pick close) and SPY over the same span."""
-    syms = sorted({v.get("yf") or v["s"] for v in log.values()} | {"SPY"})
-    try:
-        raw = yf.download(syms, period="6y", interval="1d", auto_adjust=False, group_by="ticker", threads=True, progress=False)
-    except Exception as e:  # noqa
-        print("pick download failed", e, file=sys.stderr); raw = None
-    def series(sym):
+def _month_end(k):
+    y, m = map(int, k.split("-"))
+    return pd.Timestamp(dt.date(y + (m == 12), m % 12 + 1, 1)) - pd.Timedelta(days=1)
+
+
+def _irr(flows, end_value, now):
+    """Annual return on money added over time (flows: list of (Timestamp, amount))."""
+    if not flows or end_value <= 0: return None
+    lo, hi = -0.95, 5.0
+    f = lambda r: sum(c * (1 + r) ** ((now - d).days / 365.25) for d, c in flows) - end_value
+    for _ in range(200):
+        mid = (lo + hi) / 2
+        if f(mid) > 0: hi = mid
+        else: lo = mid
+    return r2((lo + hi) / 2 * 100)
+
+
+def pick_performance(log, blog, spy_frame):
+    """Returns for the single-pick log (1 share each) and the basket log ($100 per stock), plus SPY over the same spans."""
+    syms = sorted({v.get("yf") or v["s"] for v in log.values()} | {x[1] for v in blog.values() for x in v.get("syms", [])} | {"SPY"})
+    closes = {}
+    for i in range(0, len(syms), 100):
+        chunk = syms[i:i + 100]
         try:
-            sub = raw[sym] if len(syms) > 1 else raw
-            return sub["Close"].dropna()
-        except Exception:
-            return None
-    spy = series("SPY")
-    if (spy is None or not len(spy)) and spy_frame is not None:
+            raw = yf.download(chunk, period="11y", interval="1d", auto_adjust=False, group_by="ticker", threads=True, progress=False)
+        except Exception as e:  # noqa
+            print("pick download failed", e, file=sys.stderr); continue
+        for sym in chunk:
+            try:
+                sub = raw[sym] if len(chunk) > 1 else raw
+                ser = sub["Close"].dropna()
+                if len(ser): closes[sym] = ser
+            except Exception:
+                pass
+    spy = closes.get("SPY")
+    if spy is None and spy_frame is not None:
         spy = spy_frame["Close"].dropna()
-    out, cost, val, spyv, up, beat = [], 0.0, 0.0, 0.0, 0, 0
+    def ret_since(ser, d):
+        if ser is None or not len(ser): return None
+        b = ser[ser.index <= d]
+        return float(ser.iloc[-1] / b.iloc[-1] - 1) if len(b) else None
+    now = pd.Timestamp(spy.index[-1]) if spy is not None else pd.Timestamp.today()
+    # single pick
+    out, cost, val, spyv, up, beat, fl = [], 0.0, 0.0, 0.0, 0, 0, []
     for k in sorted(log):
-        v = dict(log[k]); ser = series(v.get("yf") or v["s"])
-        if v.get("asof"):
-            d = pd.Timestamp(v["asof"])
-        else:
-            y, m = map(int, k.split("-")); d = pd.Timestamp(dt.date(y + (m == 12), m % 12 + 1, 1)) - pd.Timedelta(days=1)
-        ret = sret = None
-        if ser is not None and len(ser):
-            b = ser[ser.index <= d]
-            if len(b): ret = float(ser.iloc[-1] / b.iloc[-1] - 1)
-        if spy is not None:
-            b = spy[spy.index <= d]
-            if len(b): sret = float(spy.iloc[-1] / b.iloc[-1] - 1)
-        v["ret"] = r2(ret * 100) if ret is not None else None
-        v["spyRet"] = r2(sret * 100) if sret is not None else None
-        v["now"] = r2(v["px"] * (1 + ret)) if ret is not None else None
-        v["m"] = k
+        v = dict(log[k]); d = pd.Timestamp(v["asof"]) if v.get("asof") else _month_end(k)
+        ret, sret = ret_since(closes.get(v.get("yf") or v["s"]), d), ret_since(spy, d)
+        v.update(m=k, ret=r2(ret * 100) if ret is not None else None, spyRet=r2(sret * 100) if sret is not None else None,
+                 now=r2(v["px"] * (1 + ret)) if ret is not None else None)
         if ret is not None and v.get("final"):
-            cost += v["px"]; val += v["px"] * (1 + ret); spyv += v["px"] * (1 + (sret or 0))
+            cost += v["px"]; val += v["px"] * (1 + ret); spyv += v["px"] * (1 + (sret or 0)); fl.append((d, v["px"]))
             up += ret > 0; beat += sret is not None and ret > sret
         out.append(v)
     n = sum(1 for v in out if v.get("final") and v.get("ret") is not None)
-    return {"log": out[::-1], "tot": {"n": n, "cost": r2(cost), "val": r2(val), "spy": r2(spyv), "up": up, "beat": beat,
-            "live": sum(1 for v in out if v.get("src") == "live" and v.get("final"))}}
+    tot = {"n": n, "cost": r2(cost), "val": r2(val), "spy": r2(spyv), "up": up, "beat": beat,
+           "irr": _irr(fl, val, now), "irrSpy": _irr(fl, spyv, now),
+           "live": sum(1 for v in out if v.get("src") == "live" and v.get("final"))}
+    # basket ($100 per stock)
+    bout, bc, bv, bs, bfl, buys, months, bup, bbeat, missing = [], 0.0, 0.0, 0.0, [], 0, 0, 0, 0, 0
+    for k in sorted(blog):
+        v = blog[k]; d = pd.Timestamp(v["asof"]) if v.get("asof") else _month_end(k)
+        sret = ret_since(spy, d)
+        rets = []
+        for s_, yfs, sc in v.get("syms", []):
+            r = ret_since(closes.get(yfs), d)
+            if r is None: missing += 1
+            else: rets.append([s_, sc, r2(r * 100)])
+        row = {"m": k, "n": len(v.get("syms", [])), "src": v.get("src"), "final": v.get("final"), "asof": v.get("asof"),
+               "syms": [x[0] for x in v.get("syms", [])], "spyRet": r2(sret * 100) if sret is not None else None}
+        if rets:
+            avg = sum(x[2] for x in rets) / len(rets)
+            row.update(ret=r2(avg), inv=100 * len(rets), now=r2(100 * len(rets) * (1 + avg / 100)),
+                       best=max(rets, key=lambda x: x[2]), worst=min(rets, key=lambda x: x[2]))
+            if v.get("final"):
+                months += 1; buys += len(rets); bc += 100 * len(rets); bv += row["now"]; bs += 100 * len(rets) * (1 + (sret or 0))
+                bfl.append((d, 100 * len(rets))); bup += avg > 0; bbeat += sret is not None and avg > sret * 100
+        bout.append(row)
+    btot = {"months": months, "buys": buys, "cost": r2(bc), "val": r2(bv), "spy": r2(bs), "irr": _irr(bfl, bv, now),
+            "irrSpy": _irr(bfl, bs, now), "up": bup, "beat": bbeat, "missing": missing,
+            "sitout": sum(1 for v in blog.values() if v.get("final") and not v.get("syms")),
+            "live": sum(1 for v in blog.values() if v.get("src") == "live" and v.get("final"))}
+    return {"log": out[::-1], "tot": tot, "blog": bout[::-1], "btot": btot}
 
 
-def post_final_issue(entry, month_name):
+def post_final_issue(bentry, pentry, month_name):
+    """One email-triggering issue per month when the basket locks."""
     tok, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
-    title = f"FINAL pick for {month_name}: {entry['s']} ({entry['name']}) — score {entry['score']}/4"
-    names = {"t": "tech or semiconductor", "c": "group sell-off", "n": "moving with its sector", "d": "30%+ below its high"}
-    body = (f"**{entry['s']}** closed at **${entry['px']:.2f}**, down {abs(entry['drop']):.1f}% in {month_name}.\n\n"
-            f"Pick-pattern score **{entry['score']}/4**: " + ", ".join(("✓ " if entry['chk'][k] else "✗ ") + v for k, v in names.items()) + "\n\n"
-            + ("Next in line: " + ", ".join(f"{a} ({b}/4, {c:+.1f}%)" for a, b, c in entry.get("next", [])) + "\n\n" if entry.get("next") else "")
-            + (f"[Open the site]({site_url()})\n\n" if site_url() else "")
-            + "<sub>Rule-based pick from a backtest, not investment advice. Check the live price and news before buying.</sub>")
+    syms = bentry.get("syms", [])
+    if syms:
+        title = f"FINAL basket for {month_name}: {len(syms)} stock{'s' if len(syms) != 1 else ''} (top: {pentry['s'] if pentry else syms[0][0]})"
+        lines = [f"- **{s_}** — score {sc}/4, {bentry.get('drop', {}).get(s_, 0):+.1f}% this month, ${bentry.get('px', {}).get(s_, 0):.2f}" for s_, _, sc in syms]
+        body = (f"Every falling knife scoring 3+ on the pick pattern at the {month_name} close. Split your money equally (for example $100 each = ${100 * len(syms):,}).\n\n"
+                + "\n".join(lines) + "\n\n")
+    else:
+        title = f"FINAL basket for {month_name}: empty — no knives scored 3+ (sit out)"
+        body = "No falling knife scored 3 or more on the pick pattern this month, so the rule sits out.\n\n"
+    body += (f"[Open the site]({site_url()})\n\n" if site_url() else "") + "<sub>Rule-based basket from a backtest, not investment advice. Check live prices and news before buying.</sub>"
     if not tok or not repo:
-        print("final pick (not posted):", title); return
+        print("final basket (not posted):", title); return
     h = {"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"}
     try:
         api = f"https://api.github.com/repos/{repo}"
         existing = requests.get(f"{api}/issues", headers=h, params={"state": "all", "per_page": 50}, timeout=20).json()
-        if any(i.get("title", "").startswith(f"FINAL pick for {month_name}:") for i in existing):
+        if any(i.get("title", "").startswith(f"FINAL basket for {month_name}:") or i.get("title", "").startswith(f"FINAL pick for {month_name}:") for i in existing):
             return
         r = requests.post(f"{api}/issues", headers=h, json={"title": title, "body": body}, timeout=20)
-        print("final pick issue", r.status_code)
+        print("final basket issue", r.status_code)
     except Exception as e:  # noqa
-        print("final pick issue failed", e, file=sys.stderr)
+        print("final basket issue failed", e, file=sys.stderr)
 
 
 def auto_stories(D, month_name):
@@ -766,14 +826,16 @@ def main():
         o["wc"] = [[d.strftime("%Y-%m-%d"), r2(v)] for d, v in wk.items()]
         ALLS[s] = o
     write_json("all.json", {"asof": last_date.isoformat(), "S": ALLS, "BASE": {s: M[s]["base"] for s in M}})
-    plog, pkey = update_pick_log(D, last_date)
-    PK = pick_performance(plog, frames.get("SPY"))
+    plog, blog, pkey = update_pick_log(D, last_date)
+    PK = pick_performance(plog, blog, frames.get("SPY"))
     PK["cur"] = dict(plog[pkey], m=pkey) if pkey else None
-    meta["pick"] = PK["cur"]
-    finals = [k for k, v in plog.items() if v.get("final") and v.get("src") == "live"]
+    bkey = last_date.strftime("%Y-%m")
+    PK["bcur"] = dict(blog.get(bkey, {}), m=bkey)
+    meta["pick"] = PK["cur"]; meta["basket"] = PK["bcur"]
+    finals = [k for k, v in blog.items() if v.get("final") and v.get("src") == "live"]
     if finals:
         fk = max(finals); fy, fm = map(int, fk.split("-"))
-        post_final_issue(plog[fk], f"{calendar.month_name[fm]} {fy}")
+        post_final_issue(blog[fk], plog.get(fk), f"{calendar.month_name[fm]} {fy}")
     payload = {"D": D, "BC": BC, "BIG": BIG, "M": meta, "BASE": BASE, "G": G, "V": V, "VB": VB, "TR": TR, "PK": PK}
     with open("data.js", "w") as f:
         f.write("window.FK=" + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + ";\n")

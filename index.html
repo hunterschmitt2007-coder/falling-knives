@@ -417,6 +417,19 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 .cell.is-pick{outline:3px solid #5B3CC4;outline-offset:2px}
 @keyframes pkpulse{0%{box-shadow:0 0 0 0 rgba(91,60,196,.45)}100%{box-shadow:0 0 0 14px rgba(91,60,196,0)}}
 .pk-main.flash{animation:pkpulse 1.2s ease-out 2}
+
+.bchips{display:flex;flex-wrap:wrap;gap:8px}
+.bchip{border:1px solid #E4DCFB;background:#F8F5FF;color:var(--ink);border-radius:12px;padding:7px 11px;font-size:14px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;min-width:74px}
+.bchip b{font-size:15px;letter-spacing:-.01em}
+.bchip small{font-size:11.5px;color:var(--muted)}
+.bchip.top{background:#5B3CC4;border-color:#5B3CC4;color:#fff}.bchip.top small{color:rgba(255,255,255,.8)}
+.bchip:hover{border-color:#5B3CC4}
+.pk-big{font-size:clamp(40px,5vw,56px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.card.in-basket{border:1.5px solid #CFC2F7!important}
+.bflag{display:block;background:#F1ECFF;color:#5B3CC4;font-size:12px;font-weight:600;padding:6px 22px;text-align:center}
+details.plog{margin-top:16px}
+details.plog>summary{cursor:pointer;font-size:15px;font-weight:600;color:var(--blue);padding:8px 4px;list-style:none}
+details.plog>summary::-webkit-details-marker{display:none}
 </style>
 </head><body>
 
@@ -442,11 +455,13 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
 
 <section class="sec" id="pick" data-tab="pick" style="padding-bottom:64px">
   <div class="wide">
-    <div class="head" style="padding-bottom:24px"><p class="eyebrow" style="color:#5B3CC4">◆ Monthly pattern pick</p><h2>This month's pick.</h2><p id="pksub">One falling knife a month, chosen by the pick-pattern rule.</p></div>
+    <div class="head" style="padding-bottom:24px"><p class="eyebrow" style="color:#5B3CC4">◆ Monthly basket</p><h2>This month's basket.</h2><p id="pksub">Every falling knife that fits the pick pattern, bought in equal amounts.</p></div>
     <div id="pkbody"></div>
-    <div class="subhead" id="pk-cont"><span class="step">The contenders</span><h3>The knives that fit the pattern best.</h3><p id="pkcsub">Every falling knife scoring 3 or 4, in the order the rule would pick them. The top one is this month's pick.</p></div>
+    <div class="subhead" id="pk-cont"><span class="step" id="pkcstep">The basket</span><h3 id="pkch">The stocks in it.</h3><p id="pkcsub"></p></div>
     <div class="grid" id="gridP"></div>
-    <div class="subhead"><span class="step">The rule</span><h3>How the pick is chosen.</h3></div>
+    <div class="subhead"><span class="step">Track record</span><h3>Every month's basket.</h3><p>Equal dollars in every knife scoring 3+, held to today. Empty months mean the rule sat out.</p></div>
+    <div id="pklogs"></div>
+    <div class="subhead"><span class="step">The rule</span><h3>How the basket is chosen.</h3></div>
     <div class="sv-cols" id="pkrule"></div>
   </div>
 </section>
@@ -524,8 +539,8 @@ html.sv-lock,html.sv-lock body{overflow:hidden}
     <details class="mcard"><summary>How the numbers are measured</summary><p>This month = change from the last close of the previous month to the latest close. "Falling since high" counts trading days since the 52-week closing high. "Last up week" is the most recent completed week (Friday close) that finished above the week before; the current week is shown separately because it isn't finished. Down-week streak = consecutive completed down weeks. The weekly chart runs oldest to newest, with gains above the line and losses below; the dashed last bar is the week still in progress.</p></details>
     <details class="mcard"><summary>Where the reasons come from</summary><p>Reasons come from news coverage around each stock's biggest down days this month. High confidence = a specific, reported catalyst. Medium = a sector or theme move with supporting coverage. Low = no single catalyst found.</p></details>
     <details class="mcard"><summary>Winners and volatility</summary><p>Winners = the 50 S&amp;P 500 members with the biggest gain this month, measured the same way. <b>Volatility</b> = how much a stock's daily price swings, as the annualized standard deviation of daily returns over the last 30 trading days (1-year volatility uses the past year). A stock at 60% swings roughly three times as much as one at 20%. Average daily move is the typical size of one day's move, up or down. Beta compares a stock's daily moves with the S&amp;P 500's over the past year: 1.0 moves with the market, 2.0 moves about twice as much.</p></details>
-    <details class="mcard"><summary>Sell-a-put numbers</summary><p>Sell-a-put numbers use the listed put about 30 days out whose delta is nearest 0.30 (roughly a 70% chance of expiring worthless, by the options market's own pricing). Premium = mid of bid/ask, or the last trade when there's no live quote. Annualized = premium ÷ strike × 365 ÷ days to expiry (the return on cash set aside to buy the shares). IV is the at-the-money implied volatility, which we work out from the option prices. "× realized" compares it with the stock's actual 30-day volatility: above 1 means options are pricing in bigger swings than the stock has been making. IV rank shows where today's IV sits in its own range, and only appears after 20 days of history. All options data is from the close and updates once a day.</p></details>
-    <details class="mcard"><summary>Pick pattern</summary><p><b>Pick pattern</b> scores each falling knife on the 4 traits the best knives shared in a backtest of every monthly list from Sep 2021 to Aug 2026 (using the real S&amp;P 500 members each month): a tech or semiconductor company; falling in a group sell-off (its sector's median stock or the S&amp;P 500 down 3%+ this month); moving with its sector rather than blowing up on its own news (within 12 points of the sector median); and already 30%+ below its 52-week high. Over the next 12 months, knives scoring 4 of 4 averaged +56% (75% beat the S&amp;P 500); 3 of 4 averaged +16%; 0–1 averaged about +3%. The tech result partly reflects the AI boom in those years and may not repeat, and in 2024–25 the higher scores' edge came mostly from a few big winners. <b>Pattern pick</b>: once a month the site takes the single knife with the highest score (ties go to the biggest drop this month). It locks at the close on the month's last trading day. Months before the site existed are filled in from the backtest; later months are tracked live. A higher score means better odds, not a guaranteed pick.</p></details><details class="mcard"><summary>Bottoming signs</summary><p>Bottoming signs are four simple checks: back above the 50-day average after being below it in the last two weeks; RSI (14-day momentum) up 10+ points from an oversold reading under 30 in the last two weeks; the first up week after two or more down weeks; and a higher low (the last two weeks' low is above a 3-month low set 2–6 weeks ago). Two or more = "Rebounding". They are not predictions and fail often.</p></details>
+    <details class="mcard"><summary>Sell-a-put numbers</summary><p>Sell-a-put numbers use the listed put about 37 days out whose delta is nearest 0.30 (roughly a 70% chance of expiring worthless, by the options market's own pricing). Premium = mid of bid/ask, or the last trade when there's no live quote. Annualized = premium ÷ strike × 365 ÷ days to expiry (the return on cash set aside to buy the shares). IV is the at-the-money implied volatility, which we work out from the option prices. "× realized" compares it with the stock's actual 30-day volatility: above 1 means options are pricing in bigger swings than the stock has been making. IV rank shows where today's IV sits in its own range, and only appears after 20 days of history. All options data is from the close and updates once a day.</p></details>
+    <details class="mcard"><summary>Pick pattern</summary><p><b>Pick pattern</b> scores each falling knife on the 4 traits the best knives shared in a backtest of every monthly list from Sep 2021 to Aug 2026 (using the real S&amp;P 500 members each month): a tech or semiconductor company; falling in a group sell-off (its sector's median stock or the S&amp;P 500 down 3%+ this month); moving with its sector rather than blowing up on its own news (within 12 points of the sector median); and already 30%+ below its 52-week high. Over the next 12 months, knives scoring 4 of 4 averaged +56% (75% beat the S&amp;P 500); 3 of 4 averaged +16%; 0–1 averaged about +3%. The tech result partly reflects the AI boom in those years and may not repeat, and in 2024–25 the higher scores' edge came mostly from a few big winners. <b>Monthly basket</b>: every knife scoring 3 or 4 at the month's last close, equal dollars in each; the top of the basket (highest score, then biggest drop) is also tracked as a single-stock version. Over 10 years (2016–2026) the basket returned about 25% a year vs about 15% for the S&amp;P 500 with the same dollars, including about 23.5% a year in 2016–21, years the rule was not built on. Months before the site existed come from that backtest; later months are tracked live. A higher score means better odds, not a guaranteed pick.</p></details><details class="mcard"><summary>Bottoming signs</summary><p>Bottoming signs are four simple checks: back above the 50-day average after being below it in the last two weeks; RSI (14-day momentum) up 10+ points from an oversold reading under 30 in the last two weeks; the first up week after two or more down weeks; and a higher low (the last two weeks' low is above a 3-month low set 2–6 weeks ago). Two or more = "Rebounding". They are not predictions and fail often.</p></details>
     <details class="mcard"><summary>Track record</summary><p>Track record ranks every S&amp;P 500 member by its return in each calendar month and follows the 50 worst (and 50 best) from that month's last close. Months marked Live use the list exactly as this site published it. Earlier months are rebuilt from price history using today's members, so companies that were later dropped from the index are missing, which makes the results look somewhat better than they really were.</p></details>
     <details class="mcard"><summary>Blue chips</summary><p>Blue chips = the 50 largest S&amp;P 500 companies by market cap (one share class per company). Analyst upside = average price target vs. last close.</p></details>
     <details class="mcard"><summary>Data and live prices</summary><p>Yahoo Finance daily closes (split-adjusted) for all 503 S&amp;P 500 members, plus Yahoo quote data for valuation and analyst targets. Rankings and reasons refresh every weekday after the close (about 5:30pm ET). Prices on the cards, the blue-chip tiles and the S&amp;P figure update live from Finnhub during market hours, roughly every minute per stock (faster for the stocks on your screen); % this month, % off the high and this week's bar recalculate from the live price. Confirm prices with your broker before trading. For information only, not investment advice.</p></details>
@@ -554,6 +569,8 @@ const PATS=[["t","Tech or semiconductor","Information Technology, chip makers or
 // 12-month results for every falling knife bought Sep 2021 – Aug 2025, by pattern score
 const PATBT=[[4,52,55.7,41.9,75],[3,309,16.2,9.2,44],[2,835,10.7,4.9,39],[1,987,3.1,-1.8,30],[0,267,1.2,0.3,34]];
 const patOn=r=>r.pat&&r.mtd<0;
+const BASKET=D.filter(r=>r.patScore!=null&&r.patScore>=3).sort((a,b)=>b.patScore-a.patScore||a.mtd-b.mtd);
+const BSET=new Set(BASKET.map(r=>r.s));
 const WKEY="fk_watch";let WATCH=[];try{WATCH=JSON.parse(localStorage.getItem(WKEY)||"[]").filter(x=>typeof x==="string")}catch(e){}
 const saveW=()=>{try{localStorage.setItem(WKEY,JSON.stringify(WATCH))}catch(e){}};
 let ALLJ=null,allP=null;
@@ -639,7 +656,7 @@ function starBtn(s){const on=WATCH.includes(s);return `<button type="button" cla
 function earnBadge(r){
   if(!r.ed)return"";const n=daysTo(r.ed);if(n<0||n>45)return"";
   const inPut=earnInPut(r);
-  return `<span class="bdg ${inPut||n<=7?"b-red":"b-amb"}" title="Earnings ${dt(r.ed,1)}${r.edEst?" (estimated date)":""}${inPut?" — before the ~30-day put expires":""}">${n===0?"Earnings today":n===1?"Earnings tomorrow":`Earnings in ${n} days`}${r.edEst?" (est.)":""}</span>`;
+  return `<span class="bdg ${inPut||n<=7?"b-red":"b-amb"}" title="Earnings ${dt(r.ed,1)}${r.edEst?" (estimated date)":""}${inPut?" — before the ~37-day put expires":""}">${n===0?"Earnings today":n===1?"Earnings tomorrow":`Earnings in ${n} days`}${r.edEst?" (est.)":""}</span>`;
 }
 function patBadge(r){if(!patOn(r)||r.pat.score<3)return"";const p=r.pat.score;return `<span class="bdg ${p===4?"b-pat4":"b-pat"}" title="Matches ${p} of the 4 traits the best falling knives shared (2021–2026 backtest)">◆ ${p===4?"Perfect-pick pattern":"Strong pick pattern"} · ${p}/4</span>`}
 function patSection(r){
@@ -666,9 +683,10 @@ function card(r,label,kind){
   const factT=kind==="gain"?"The run":kind==="vol"?"The swings":"The drop";
   const o=r.opt,p=o&&o.puts&&(o.puts.find(x=>x.d===30)||o.puts[0]);
   const badges=patBadge(r)+earnBadge(r)+sigBadge(r);
-  const isPick=window.FK.PK&&window.FK.PK.cur&&window.FK.PK.cur.s===r.s&&r.mtd<0;
-  return `<article class="card${isPick?" is-pick":""}" data-s="${r.s}" data-label="${esc(label)}" data-kind="${kind}">
-    ${isPick?`<span class="pickflag">◆ ${window.FK.PK.cur.final?"This month's pick (final)":"This month's pick (leading)"}</span>`:""}
+  const isPick=BASKET.length&&BASKET[0].s===r.s&&r.mtd<0,inB=!isPick&&BSET.has(r.s)&&r.mtd<0;
+  const fin=window.FK.PK&&window.FK.PK.bcur&&window.FK.PK.bcur.final;
+  return `<article class="card${isPick?" is-pick":inB?" in-basket":""}" data-s="${r.s}" data-label="${esc(label)}" data-kind="${kind}">
+    ${isPick?`<span class="pickflag">◆ Top of this month's basket${fin?" (final)":""}</span>`:inB?`<span class="bflag">◆ In this month's basket${fin?" (final)":""}</span>`:""}
     <header class="c-hd">
       <div class="ctop"><span class="rank">${label}</span><span class="pills">${kind==="fall"?statusPill(r):wkPill(r)}${starBtn(r.s)}</span></div>
       <div class="idrow">
@@ -730,7 +748,7 @@ const SORTS_V=[["rank","Most volatile (30-day)",1],["adm","Biggest average daily
 const PUTSORTS=[["patScore","Best pick pattern",-1],["pAnn","Best put premium (30Δ)",-1],["ivhv","Richest IV vs realized",-1]];
 SORTS.push(...PUTSORTS);SORTS_G.push(...PUTSORTS);SORTS_V.push(...PUTSORTS);
 const WL={id:"gridW",rows:[],kind:"watch",label:()=>"My list",olabel:()=>"On My list"};
-const PL={id:"gridP",rows:(()=>{const all=D.filter(r=>r.patScore!=null&&r.patScore>=2).sort((a,b)=>b.patScore-a.patScore||a.mtd-b.mtd);const strong=all.filter(r=>r.patScore>=3);return strong.length>=6?strong:all.slice(0,Math.max(6,strong.length))})(),kind:"fall",label:r=>"Contender No. "+(PL.rows.indexOf(r)+1),olabel:r=>"Pick contender No. "+(PL.rows.indexOf(r)+1)};
+const PL={id:"gridP",rows:BASKET.length?BASKET.slice():D.filter(r=>r.patScore===2).sort((a,b)=>a.mtd-b.mtd).slice(0,6),kind:"fall",label:r=>BASKET.length?(BASKET[0]===r?"◆ Top of the basket":"Basket No. "+(BASKET.indexOf(r)+1)):"Closest to qualifying",olabel:r=>BASKET.includes(r)?"Basket No. "+(BASKET.indexOf(r)+1)+" of "+BASKET.length:"Close to qualifying"};
 const LISTS=[
   {id:"grid",bar:"bar1",p:"f1",rows:D,kind:"fall",noun:"stocks",label:r=>"No. "+r.rank,olabel:r=>`No. ${r.rank} falling knife`},
   {id:"gridG",bar:"barG",p:"fg",rows:G,kind:"gain",noun:"stocks",label:r=>"No. "+r.rank,olabel:r=>`No. ${r.rank} best performer`,sorts:SORTS_G,reasons:false},
@@ -763,63 +781,70 @@ if(V.length)$("#vsub").textContent=`The ${V.length} S&P 500 stocks with the wild
 const heatT=v=>{const a=Math.min(Math.abs(v)/12,1);return a<0.5?0.08+0.6*a:0.72+0.28*(a-0.5)/0.5};
 const heatColor=v=>{const lo=v<0?[253,227,225]:[222,242,228],hi=v<0?[196,20,20]:[28,128,62],t=heatT(v);return `rgb(${lo.map((x,i)=>Math.round(x+(hi[i]-x)*t))})`};
 const heatInk=v=>heatT(v)<0.5?(v<0?"#8A1A12":"#1B5E30"):"#fff";
-$("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell${window.FK.PK&&window.FK.PK.cur&&window.FK.PK.cur.s===s?" is-pick":""}" data-s="${s}" href="#chart=${encodeURIComponent(s)}" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open chart"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
+$("#heat").innerHTML=BIG.map(([s,mc,v])=>`<a class="cell${BSET.has(s)?" is-pick":""}" data-s="${s}" href="#chart=${encodeURIComponent(s)}" style="background:${heatColor(v)};--cell-ink:${heatInk(v)}" title="${s}: ${pct(v)} this month · ${capFmt(mc)} market cap. Open chart"><b>${s}</b><span>${pct(v)}</span></a>`).join("");
 $("#heat").addEventListener("click",e=>{if(e.target.closest("[data-star]"))return;const c=e.target.closest("a.cell");if(!c||e.metaKey||e.ctrlKey||e.shiftKey)return;e.preventDefault();window.FKsv.open(c.dataset.s,BIG.map(b=>b[0]),true,null)});
 LISTS.forEach(L=>L.S&&L.S.run());
 if(!VB.length){const x=document.querySelector(".subnav .vbl");if(x)x.hidden=true}
 
-/* ===== MONTHLY PATTERN PICK ===== */
+/* ===== MONTHLY BASKET ===== */
 function renderPick(){
   const PK=window.FK.PK,el=$("#pkbody");
   if(!PK||!PK.cur){$("#pick").classList.add("tabhide-empty");return}
-  const c=PK.cur,row=D.find(r=>r.s===c.s),t=PK.tot||{};
-  const [y,m]=c.m.split("-").map(Number);const mName=new Date(Date.UTC(y,m-1,15)).toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
+  const bc=PK.bcur||{},final=!!bc.final,asof=bc.asof||PK.cur.asof,mkey=bc.m||PK.cur.m;
+  const [y,m]=mkey.split("-").map(Number);const mName=new Date(Date.UTC(y,m-1,15)).toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
   let ld=new Date(Date.UTC(y,m,0));while(ld.getUTCDay()===0||ld.getUTCDay()===6)ld.setUTCDate(ld.getUTCDate()-1);
   const ldTxt=ld.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
-  const st=c.final?`<span class="pk-st final">Final pick for ${mName} · locked at the ${dt(c.asof)} close</span>`:`<span class="pk-st">Leading as of ${dt(c.asof)} · locks at the close on the last trading day (${ldTxt})</span>`;
-  const live=row&&row.liveT;
-  $("#pksub").textContent=c.final?`The rule's pick for ${mName}. The next pick starts building on the first trading day of next month.`:`The rule's current leader for ${mName}. It can change every day until the month's last close.`;
-  const log=PK.log||[];
-  const rows=log.map(v=>{const [yy,mm]=v.m.split("-").map(Number);const mn=new Date(Date.UTC(yy,mm-1,15)).toLocaleDateString("en-US",{month:"short",year:"numeric",timeZone:"UTC"});
-    const tag=!v.final?'<span class="tag lead">Leading</span>':v.src==="live"?'<span class="tag live">Live</span>':'<span class="tag">Backtest</span>';
-    return `<tr><td class="k">${mn}</td><td><b>${esc(v.s)}</b> <span style="color:var(--faint)">${esc(v.name||"")}</span></td><td>${v.score}/4</td><td>${money(v.px)}</td><td>${v.final&&v.now!=null?money(v.now):"—"}</td><td class="${v.final?cls(v.ret):""}">${v.final?pct(v.ret):"in progress"}</td><td class="${v.final?cls(v.spyRet):""}">${v.final?pct(v.spyRet):"—"}</td><td>${tag}</td></tr>`});
-  const pl=t.cost?((t.val/t.cost-1)*100):null,sl=t.cost?((t.spy/t.cost-1)*100):null;
+  const st=final?`<span class="pk-st final">Final basket for ${mName} · locked at the ${dt(asof)} close</span>`:`<span class="pk-st">As of ${dt(asof)} · locks at the close on the last trading day (${ldTxt})</span>`;
+  const n=BASKET.length,bt=PK.btot||{},t=PK.tot||{};
+  $("#pksub").textContent=final?`${mName}'s basket is locked. Buy after that close, equal dollars in each. The next basket starts building on the first trading day of next month.`:`${mName}'s basket so far. Stocks can join or drop out every day until the month's last close.`;
   el.innerHTML=`<div class="pk">
-    <article class="pk-main" data-s="${esc(c.s)}" tabindex="0" aria-label="Open ${esc(c.s)} chart">
+    <article class="pk-main" style="cursor:default">
       ${st}
-      <div class="pk-id"><div><div class="pk-tk">${esc(c.s)}</div><div class="pk-nm">${esc(c.name||"")}</div></div><div style="text-align:right"><div class="big num neg" style="font-size:34px">${pct(c.drop)}</div><div style="font-size:12px;color:var(--faint)">in ${mName}</div></div></div>
-      <div><div class="cs-h" style="margin-bottom:8px">Pick pattern<span class="pmeter" aria-label="${c.score} of 4">${[0,1,2,3].map(i=>`<b class="${i<c.score?"on":""}"></b>`).join("")}</span></div>
-        <div class="patrow">${PATS.map(([k,l])=>`<span class="pchip ${c.chk[k]?"on":""}"><i>${c.chk[k]?"✓":"–"}</i>${l}</span>`).join("")}</div></div>
-      <dl class="pk-kv"><div><dt>${c.final?"Pick price (close)":"Price at last close"}</dt><dd class="num">${money(c.px)}</dd></div><div><dt>${live?"Live price":"Latest price"}</dt><dd class="num" id="pkPx">${money(row?row.last:c.px)}</dd></div><div><dt>Score</dt><dd class="num">${c.score} of 4</dd></div></dl>
-      ${c.next&&c.next.length?`<div class="pk-next">Next in line: ${c.next.map(([s2,sc,md])=>`<b>${esc(s2)}</b> (${sc}/4, ${pct(md)})`).join(" · ")}</div>`:""}
-      <div class="pk-act"><button type="button" class="btn" data-open="${esc(c.s)}">Chart &amp; full stats</button>${starBtn(c.s)}</div>
+      <div class="pk-id"><div><div class="pk-big">${n?`${n} stock${n>1?"s":""}`:"Empty"}</div><div class="pk-nm">${n?"scoring 3 or 4 on the pick pattern":"no falling knife scores 3+ yet, so the rule sits out unless one qualifies by the last close"}</div></div>
+        ${n?`<div style="text-align:right"><div style="font-size:13px;color:var(--faint)">Equal dollars, e.g.</div><div style="font-size:22px;font-weight:600;letter-spacing:-.02em">$100 each = ${money(100*n).replace(".00","")}</div></div>`:""}</div>
+      ${n?`<div class="bchips">${BASKET.map((r,i)=>`<button type="button" class="bchip${i===0?" top":""}" data-open="${esc(r.s)}" title="${esc(r.name)}"><b>${i===0?"◆ ":""}${esc(r.s)}</b><small>${r.patScore}/4 · ${pct(r.mtd)}</small></button>`).join("")}</div>
+        <div class="pk-next">◆ Top of the basket: <b>${esc(BASKET[0].s)}</b> ${esc(BASKET[0].name)} (${BASKET[0].patScore}/4, ${pct(BASKET[0].mtd)}). It's the single stock the rule would pick if you only bought one.</div>`:""}
     </article>
     <div class="pk-side">
-      <div class="tr-tile wide2"><b class="num ${cls(pl)}">${t.cost?money(t.val):"—"}</b><span>What 1 share of every pick since ${log.length?new Date(Date.UTC(+log.at(-1).m.slice(0,4),+log.at(-1).m.slice(5)-1,15)).toLocaleDateString("en-US",{month:"short",year:"numeric",timeZone:"UTC"}):"the start"} is worth now. You'd have paid ${money(t.cost)} (${pct(pl,0)}). The same money in the S&amp;P 500: ${money(t.spy)} (${pct(sl,0)}).</span></div>
-      <div class="tr-tile"><b class="num">${t.up||0} of ${t.n||0}</b><span>picks are up</span></div>
-      <div class="tr-tile"><b class="num">${t.beat||0} of ${t.n||0}</b><span>beat the S&amp;P 500 over the same span</span></div>
-      <p class="pk-rule">Rule: the knife with the highest pick-pattern score; ties go to the biggest drop this month. Picks before this site existed come from the backtest (built on that same data, so treat them with some skepticism). Live picks so far: ${t.live||0}. Not investment advice.</p>
+      <div class="tr-tile wide2"><b class="num ${cls((bt.val||0)-(bt.cost||0))}">${bt.cost?money(bt.val):"—"}</b><span>What $100 in every basket stock since Sep 2016 is worth now. You'd have put in ${money(bt.cost)} over ${bt.buys||0} buys. The same money in the S&amp;P 500: ${money(bt.spy)}.</span></div>
+      <div class="tr-tile"><b class="num ${cls(bt.irr)}">${bt.irr!=null?pct(bt.irr,1):"—"}</b><span>a year for the basket vs ${bt.irrSpy!=null?pct(bt.irrSpy,1):"—"} for the S&amp;P 500</span></div>
+      <div class="tr-tile"><b class="num">${bt.beat||0} of ${bt.months||0}</b><span>months the basket beat the S&amp;P (${bt.sitout||0} months sat out)</span></div>
+      <p class="pk-rule">Months before the site existed come from a backtest of the real S&amp;P 500 members each month. The rule was built on 2021–2026 and held up on 2016–2021, but older years are missing some delisted stocks, which flatters them. Live baskets so far: ${bt.live||0}. Not investment advice.</p>
     </div>
-  </div>
-  <div class="sv-card sv-wide" style="margin-top:20px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px"><h3 class="sv-h3" style="margin:0">Pick log · 1 share each</h3><span style="font-size:12.5px;color:var(--faint)">Prices adjusted for splits</span></div>
-    <div class="tscroll"><table class="ptab pklog"><thead><tr><th>Month</th><th style="text-align:left">Pick</th><th>Score</th><th>Bought at</th><th>Worth now</th><th>Return</th><th>S&amp;P same span</th><th></th></tr></thead><tbody id="pkrows">${rows.slice(0,12).join("")}</tbody></table></div>
-    ${rows.length>12?`<div style="text-align:center;margin-top:12px"><button type="button" class="showall" id="pkall" style="margin:0">Show all ${rows.length} months</button></div>`:""}
   </div>`;
-  const allBtn=$("#pkall");if(allBtn)allBtn.addEventListener("click",()=>{const open=allBtn.dataset.open==="1";$("#pkrows").innerHTML=(open?rows.slice(0,12):rows).join("");allBtn.dataset.open=open?"0":"1";allBtn.textContent=open?`Show all ${rows.length} months`:"Show fewer"});
-  const gp=$("#gridP");const n3=PL.rows.filter(r=>r.patScore>=3).length;$("#pkcsub").textContent=n3>=PL.rows.length?`All ${n3} falling knives scoring 3 or 4, in the order the rule would pick them. The top one is this month's pick.`:`${n3} knives score 3 or 4 right now, so the best 2s are included too, in the order the rule would pick them.`;
-  const drawP=all=>{gp.innerHTML=PL.rows.length?(all?PL.rows:PL.rows.slice(0,6)).map(r=>card(r,PL.label(r),"fall")).join("")+(PL.rows.length>6?`<button type="button" class="showall" data-pall="1">${all?"Show fewer":`Show all ${PL.rows.length} contenders`}</button>`:""):`<p class="empty">No knives score 2 or more right now.</p>`;gp.dataset.all=all?"1":""};
+  el.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>window.FKsv.open(b.dataset.open,BASKET.map(r=>r.s),true,PL)));
+  // basket grid
+  const gp=$("#gridP");
+  $("#pkcstep").textContent=n?"The basket":"Closest to qualifying";$("#pkch").textContent=n?"The stocks in it.":"Knives scoring 2 of 4.";
+  $("#pkcsub").textContent=n?`All ${n}, in the order the rule ranks them (highest score, then biggest drop). The first one is the top of the basket.`:"Nothing scores 3+ right now. These are the closest, in case one qualifies before the month-end close.";
+  const drawP=all=>{gp.innerHTML=PL.rows.length?(all?PL.rows:PL.rows.slice(0,6)).map(r=>card(r,PL.label(r),"fall")).join("")+(PL.rows.length>6?`<button type="button" class="showall" data-pall="1">${all?"Show fewer":`Show all ${PL.rows.length}`}</button>`:""):`<p class="empty">No knives score 2 or more right now.</p>`;gp.dataset.all=all?"1":""};
   drawP(false);
   if(!gp.dataset.bound){gp.dataset.bound="1";gp.addEventListener("click",e=>{if(e.target.closest("[data-pall]")){e.stopPropagation();const all=!gp.dataset.all;drawP(all);if(!all)$("#pk-cont").scrollIntoView({behavior:"smooth"})}},true)}
+  // logs
+  const mlabel=k=>new Date(Date.UTC(+k.slice(0,4),+k.slice(5)-1,15)).toLocaleDateString("en-US",{month:"short",year:"numeric",timeZone:"UTC"});
+  const tagOf=v=>!v.final?'<span class="tag lead">Building</span>':v.src==="live"?'<span class="tag live">Live</span>':'<span class="tag">Backtest</span>';
+  const brows=(PK.blog||[]).map(v=>`<tr><td class="k">${mlabel(v.m)}</td><td style="text-align:left;white-space:normal;min-width:180px">${v.n?`<b>${v.n}</b> · <span style="color:var(--muted)">${esc(v.syms.slice(0,6).join(", "))}${v.n>6?` +${v.n-6} more`:""}</span>`:'<span style="color:var(--faint)">Sat out</span>'}</td><td>${v.inv?money(v.inv).replace(".00",""):"—"}</td><td>${v.final&&v.now!=null?money(v.now):"—"}</td><td class="${v.final?cls(v.ret):""}">${v.final&&v.ret!=null?pct(v.ret):v.n?"in progress":"—"}</td><td class="${v.final&&v.n?cls(v.spyRet):""}">${v.final&&v.n?pct(v.spyRet):"—"}</td><td>${v.best&&v.final?`${esc(v.best[0])} ${pct(v.best[2],0)}`:"—"}</td><td>${tagOf(v)}</td></tr>`);
+  const prows=(PK.log||[]).map(v=>`<tr><td class="k">${mlabel(v.m)}</td><td><b>${esc(v.s)}</b> <span style="color:var(--faint)">${esc(v.name||"")}</span></td><td>${v.score}/4</td><td>${money(v.px)}</td><td>${v.final&&v.now!=null?money(v.now):"—"}</td><td class="${v.final?cls(v.ret):""}">${v.final?pct(v.ret):"in progress"}</td><td class="${v.final?cls(v.spyRet):""}">${v.final?pct(v.spyRet):"—"}</td><td>${tagOf(v)}</td></tr>`);
+  $("#pklogs").innerHTML=`<div class="sv-card sv-wide" style="margin-top:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px"><h3 class="sv-h3" style="margin:0">Basket log · $100 per stock</h3><span style="font-size:12.5px;color:var(--faint)">${bt.missing?`${bt.missing} older buys have no price data left and are left out`:"Prices adjusted for splits"}</span></div>
+    <div class="tscroll"><table class="ptab pklog"><thead><tr><th>Month</th><th style="text-align:left">Basket</th><th>Invested</th><th>Worth now</th><th>Return</th><th>S&amp;P same span</th><th>Best</th><th></th></tr></thead><tbody id="bkrows">${brows.slice(0,12).join("")}</tbody></table></div>
+    ${brows.length>12?`<div style="text-align:center;margin-top:12px"><button type="button" class="showall" id="bkall" style="margin:0">Show all ${brows.length} months</button></div>`:""}</div>
+    <details class="plog"><summary>Single-stock version: top of the basket only, 1 share a month ›</summary>
+      <div class="sv-card sv-wide" style="margin-top:8px"><p style="margin:0 0 10px;font-size:14px;color:var(--muted)">1 share of the top stock each month since Sep 2016: paid ${money(t.cost)}, worth ${money(t.val)} now (${t.irr!=null?pct(t.irr,1):"—"} a year) vs ${money(t.spy)} in the S&amp;P 500 (${t.irrSpy!=null?pct(t.irrSpy,1):"—"} a year). One stock a month is much noisier than the basket, which is why the basket is the main rule now.</p>
+      <div class="tscroll"><table class="ptab pklog"><thead><tr><th>Month</th><th style="text-align:left">Pick</th><th>Score</th><th>Bought at</th><th>Worth now</th><th>Return</th><th>S&amp;P same span</th><th></th></tr></thead><tbody id="pkrows">${prows.slice(0,12).join("")}</tbody></table></div>
+      ${prows.length>12?`<div style="text-align:center;margin-top:12px"><button type="button" class="showall" id="pkall" style="margin:0">Show all ${prows.length} months</button></div>`:""}</div></details>`;
+  const tog=(btnId,bodyId,rows)=>{const b=$(btnId);if(b)b.addEventListener("click",()=>{const open=b.dataset.open==="1";$(bodyId).innerHTML=(open?rows.slice(0,12):rows).join("");b.dataset.open=open?"0":"1";b.textContent=open?`Show all ${rows.length} months`:"Show fewer"})};
+  tog("#bkall","#bkrows",brows);tog("#pkall","#pkrows",prows);
   $("#pkrule").innerHTML=`<div class="sv-card"><h3 class="sv-h3">The rule</h3><ol style="margin:0;padding-left:20px;font-size:15px;line-height:1.6">
       <li>Take this month's 50 falling knives.</li><li>Score each one on the 4 pick-pattern checks: ${PATS.map(p=>p[1].toLowerCase()).join(", ")}.</li>
-      <li>Pick the highest score. Ties go to the biggest drop this month.</li><li>The pick locks at the close on the month's last trading day. Buy after that close.</li></ol>
-      <p class="sv-rng" style="margin-top:12px">Until it locks, the leader can change every day. You'll get a "FINAL pick" email when it locks.</p></div>
-    <div class="sv-card"><h3 class="sv-h3">How knives with each score did over the next 12 months</h3><div class="tscroll"><table class="ptab bt"><thead><tr><th>Score</th><th>Knives</th><th>Average</th><th>Typical</th><th>Beat S&amp;P</th></tr></thead><tbody>
-      ${PATBT.map(([sc,n,a,m,b])=>`<tr class="${sc===c.score?"cur30":""}"><td class="sc">${sc}/4</td><td>${n}</td><td class="${cls(a)}">${pct(a)}</td><td class="${cls(m)}">${pct(m)}</td><td>${b}%</td></tr>`).join("")}</tbody></table></div>
-      <p class="sv-rng" style="margin-top:8px">Every monthly falling knife bought Sep 2021 – Aug 2025. One pattern pick a month, 1 share each, turned $6,094 into about $12,200 by Sep 2026 vs $9,470 in the S&amp;P 500, but the rule was built on those same years, so the live picks are the real test.</p></div>`;
-  const main=el.querySelector(".pk-main");
-  main.addEventListener("click",e=>{const st2=e.target.closest("[data-star]");if(st2){toggleWatch(st2.dataset.star);return}window.FKsv.open(c.s,D.map(r=>r.s),true,LISTS[0])});
-  main.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target===main)window.FKsv.open(c.s,D.map(r=>r.s),true,LISTS[0])});
+      <li>The basket is every knife scoring 3 or 4. Put the same dollar amount in each.</li><li>It locks at the close on the month's last trading day. Buy after that close and hold.</li><li>If nothing scores 3+, sit that month out.</li></ol>
+      <p class="sv-rng" style="margin-top:12px">You'll get a "FINAL basket" email when it locks. Over 10 years the basket had between 1 and 34 stocks in months it bought, and sat out 44 of 120 months.</p></div>
+    <div class="sv-card"><h3 class="sv-h3">10-year backtest, $100 in each knife</h3><div class="tscroll"><table class="ptab bt"><thead><tr><th>Group</th><th>2016–21</th><th>2021–26</th><th>10 years</th></tr></thead><tbody>
+      <tr class="cur30"><td class="sc">Score 3+ (the basket)</td><td class="pos">+23.5%/yr</td><td class="pos">+30.6%/yr</td><td class="pos">+25.5%/yr</td></tr>
+      <tr><td class="sc">Score 4 only</td><td class="pos">+44.6%/yr</td><td class="pos">+63.4%/yr</td><td class="pos">+52.6%/yr</td></tr>
+      <tr><td class="sc">All 50 knives</td><td>+12.9%/yr</td><td>+15.0%/yr</td><td>+13.3%/yr</td></tr>
+      <tr><td class="sc">Score 0–1</td><td>+9.6%/yr</td><td>+8.7%/yr</td><td>+9.5%/yr</td></tr>
+      <tr><td class="sc">S&amp;P 500, same dollars</td><td>~14%/yr</td><td>~17%/yr</td><td>~15%/yr</td></tr></tbody></table></div>
+      <p class="sv-rng" style="margin-top:8px">The rule was built on 2021–26. 2016–21 is the out-of-sample check, and the basket beat the S&amp;P there too. Score 4 is rare (63 buys in 10 years). Returns ignore taxes and trading costs.</p></div>`;
 }
 renderPick();
 
@@ -903,7 +928,7 @@ function renderTrack(){
 }
 
 /* ===== TABS ===== */
-const TABS=[...(window.FK.PK&&window.FK.PK.cur?[["pick","◆ Monthly pick"]]:[]),["fall","Falling"],["gain","Winners"],["vol","Volatile"],["bc","Blue Chips"],["watch","★ My list"],["track","Track record"]].filter(([k])=>!(k==="gain"&&!G.length)&&!(k==="vol"&&!V.length));
+const TABS=[...(window.FK.PK&&window.FK.PK.cur?[["pick","◆ Monthly basket"]]:[]),["fall","Falling"],["gain","Winners"],["vol","Volatile"],["bc","Blue Chips"],["watch","★ My list"],["track","Track record"]].filter(([k])=>!(k==="gain"&&!G.length)&&!(k==="vol"&&!V.length));
 let curTab="fall";try{const t=localStorage.getItem("fk_tab");if(TABS.find(x=>x[0]===t))curTab=t}catch(e){}
 $("#tabs").innerHTML=TABS.map(([k,l])=>`<button type="button" class="tab" role="tab" data-tab-btn="${k}" aria-selected="${k===curTab}">${l}${k==="watch"?'<em id="tabn-watch"></em>':""}</button>`).join("");
 let trDone=false;
