@@ -459,7 +459,7 @@ details.plog>summary::-webkit-details-marker{display:none}
     <div id="pkbody"></div>
     <div class="subhead" id="pk-cont"><span class="step" id="pkcstep">The basket</span><h3 id="pkch">The stocks in it.</h3><p id="pkcsub"></p></div>
     <div class="grid" id="gridP"></div>
-    <div class="subhead"><span class="step">Track record</span><h3>Every month's basket.</h3><p>Equal dollars in every knife scoring 3+, held to today. Empty months mean the rule sat out.</p></div>
+    <div class="subhead"><span class="step">Track record</span><h3>This year's baskets.</h3><p id="bklogsub">Every basket since January, $100 in each stock, held to today. A new month is added as each basket locks. Empty months mean the rule sat out.</p></div>
     <div id="pklogs"></div>
     <div class="subhead"><span class="step">The rule</span><h3>How the basket is chosen.</h3></div>
     <div class="sv-cols" id="pkrule"></div>
@@ -796,6 +796,8 @@ function renderPick(){
   const ldTxt=ld.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
   const st=final?`<span class="pk-st final">Final basket for ${mName} · locked at the ${dt(asof)} close</span>`:`<span class="pk-st">As of ${dt(asof)} · locks at the close on the last trading day (${ldTxt})</span>`;
   const n=BASKET.length,bt=PK.btot||{},t=PK.tot||{};
+  const bl=(PK.blog||[]),bfirst=bl.length?bl[bl.length-1].m:null;
+  const bstart=bfirst?new Date(Date.UTC(+bfirst.slice(0,4),+bfirst.slice(5)-1,15)).toLocaleDateString("en-US",{month:"short",year:"numeric",timeZone:"UTC"}):"January";
   $("#pksub").textContent=final?`${mName}'s basket is locked. Buy after that close, equal dollars in each. The next basket starts building on the first trading day of next month.`:`${mName}'s basket so far. Stocks can join or drop out every day until the month's last close.`;
   el.innerHTML=`<div class="pk">
     <article class="pk-main" style="cursor:default">
@@ -806,10 +808,10 @@ function renderPick(){
         <div class="pk-next">◆ Top of the basket: <b>${esc(BASKET[0].s)}</b> ${esc(BASKET[0].name)} (${BASKET[0].patScore}/4, ${pct(BASKET[0].mtd)}). It's the single stock the rule would pick if you only bought one.</div>`:""}
     </article>
     <div class="pk-side">
-      <div class="tr-tile wide2"><b class="num ${cls((bt.val||0)-(bt.cost||0))}">${bt.cost?money(bt.val):"—"}</b><span>What $100 in every basket stock since Sep 2016 is worth now. You'd have put in ${money(bt.cost)} over ${bt.buys||0} buys. The same money in the S&amp;P 500: ${money(bt.spy)}.</span></div>
+      <div class="tr-tile wide2"><b class="num ${cls((bt.val||0)-(bt.cost||0))}">${bt.cost?money(bt.val):"—"}</b><span>What $100 in every basket stock since ${bstart} is worth now. You'd have put in ${money(bt.cost)} over ${bt.buys||0} buys. The same money in the S&amp;P 500: ${money(bt.spy)}.</span></div>
       <div class="tr-tile"><b class="num ${cls(bt.irr)}">${bt.irr!=null?pct(bt.irr,1):"—"}</b><span>a year for the basket vs ${bt.irrSpy!=null?pct(bt.irrSpy,1):"—"} for the S&amp;P 500</span></div>
       <div class="tr-tile"><b class="num">${bt.beat||0} of ${bt.months||0}</b><span>months the basket beat the S&amp;P (${bt.sitout||0} months sat out)</span></div>
-      <p class="pk-rule">Months before the site existed come from a backtest of the real S&amp;P 500 members each month. The rule was built on 2021–2026 and held up on 2016–2021, but older years are missing some delisted stocks, which flatters them. Live baskets so far: ${bt.live||0}. Not investment advice.</p>
+      <p class="pk-rule">January–August come from the backtest (the same rule applied to the real S&amp;P 500 each month); from September on, each basket is tracked live as it locks. Live baskets so far: ${bt.live||0}. The 10-year backtest is in "The rule" below. Not investment advice.</p>
     </div>
   </div>`;
   el.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>window.FKsv.open(b.dataset.open,BASKET.map(r=>r.s),true,PL)));
@@ -825,7 +827,7 @@ function renderPick(){
   const tagOf=v=>!v.final?'<span class="tag lead">Building</span>':v.src==="live"?'<span class="tag live">Live</span>':'<span class="tag">Backtest</span>';
   const brows=(PK.blog||[]).map(v=>`<tr><td class="k">${mlabel(v.m)}</td><td style="text-align:left;white-space:normal;min-width:180px">${v.n?`<b>${v.n}</b> · <span style="color:var(--muted)">${esc(v.syms.slice(0,6).join(", "))}${v.n>6?` +${v.n-6} more`:""}</span>`:'<span style="color:var(--faint)">Sat out</span>'}</td><td>${v.inv?money(v.inv).replace(".00",""):"—"}</td><td>${v.final&&v.now!=null?money(v.now):"—"}</td><td class="${v.final?cls(v.ret):""}">${v.final&&v.ret!=null?pct(v.ret):v.n?"in progress":"—"}</td><td class="${v.final&&v.n?cls(v.spyRet):""}">${v.final&&v.n?pct(v.spyRet):"—"}</td><td>${v.best&&v.final?`${esc(v.best[0])} ${pct(v.best[2],0)}`:"—"}</td><td>${tagOf(v)}</td></tr>`);
   const prows=(PK.log||[]).map(v=>`<tr><td class="k">${mlabel(v.m)}</td><td><b>${esc(v.s)}</b> <span style="color:var(--faint)">${esc(v.name||"")}</span></td><td>${v.score}/4</td><td>${money(v.px)}</td><td>${v.final&&v.now!=null?money(v.now):"—"}</td><td class="${v.final?cls(v.ret):""}">${v.final?pct(v.ret):"in progress"}</td><td class="${v.final?cls(v.spyRet):""}">${v.final?pct(v.spyRet):"—"}</td><td>${tagOf(v)}</td></tr>`);
-  $("#pklogs").innerHTML=`<div class="sv-card sv-wide" style="margin-top:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px"><h3 class="sv-h3" style="margin:0">Basket log · $100 per stock</h3><span style="font-size:12.5px;color:var(--faint)">${bt.missing?`${bt.missing} older buys have no price data left and are left out`:"Prices adjusted for splits"}</span></div>
+  $("#pklogs").innerHTML=`<div class="sv-card sv-wide" style="margin-top:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px"><h3 class="sv-h3" style="margin:0">Basket log since ${bstart} · $100 per stock</h3><span style="font-size:12.5px;color:var(--faint)">${bt.missing?`${bt.missing} older buys have no price data left and are left out`:"Prices adjusted for splits"}</span></div>
     <div class="tscroll"><table class="ptab pklog"><thead><tr><th>Month</th><th style="text-align:left">Basket</th><th>Invested</th><th>Worth now</th><th>Return</th><th>S&amp;P same span</th><th>Best</th><th></th></tr></thead><tbody id="bkrows">${brows.slice(0,12).join("")}</tbody></table></div>
     ${brows.length>12?`<div style="text-align:center;margin-top:12px"><button type="button" class="showall" id="bkall" style="margin:0">Show all ${brows.length} months</button></div>`:""}</div>
     <details class="plog"><summary>Single-stock version: top of the basket only, 1 share a month ›</summary>

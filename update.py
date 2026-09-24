@@ -315,7 +315,7 @@ def put_options(s, last, asof):
         for e in exps:
             dte = (dt.date.fromisoformat(e) - asof).days
             if dte < 7: continue
-            score = abs(dte - 37) + (0 if 27 <= dte <= 55 else 100)
+            score = abs(dte - 37) + (0 if 27 <= dte <= 65 else 100)  # stocks with only monthly options use the next monthly after ~4 weeks
             if best is None or score < best[0]: best = (score, e, dte)
         if not best: return s, None
         _, exp, dte = best
